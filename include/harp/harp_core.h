@@ -27,7 +27,7 @@ HarpResult harp_exit(
     HarpRuntime *runtime
 );
 
-HarpResult harp_runtime_load_plugins(
+HarpResult harp_runtime_load_packages(
     HarpRuntime *runtime,
     const char *path
 );
@@ -38,11 +38,11 @@ HarpResult harp_runtime_get_api(
     HarpApiBase **out_api
 );
 
-HarpResult harp_runtime_get_plugin_count(
+HarpResult harp_runtime_get_package_count(
     HarpRuntime *runtime,
     uint64_t *out_count
 );
-HarpResult harp_runtime_get_plugin_name(
+HarpResult harp_runtime_get_package_name(
     HarpRuntime *runtime,
     uint64_t index,
     HarpName *out_name

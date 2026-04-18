@@ -15,7 +15,7 @@ extern "C" {
 
 
 /* ================================================================================ */
-/*  GENERIC TYPES                                                                   */
+/*  TYPEDEF                                                                         */
 /* ================================================================================ */
 
 typedef uint32_t HarpResult;
@@ -31,16 +31,6 @@ enum {
 typedef const char* HarpName;
 typedef uint32_t HarpVersion;
 
-
-/* ================================================================================ */
-/*  BASE STRUCTS                                                                    */
-/* ================================================================================ */
-
-typedef struct HarpApiBase {
-    HarpVersion version;
-    uint8_t available;
-} HarpApiBase;
-
 typedef uint8_t HarpCreatorKind;
 typedef uint32_t HarpCreatorFlags;
 enum {
@@ -48,25 +38,36 @@ enum {
     HARP_CREATOR_FLAG_EXPERIMENTAL          = (1 << 1),
     HARP_CREATOR_FLAG_RESOLVE_DEPENDENCIES  = (1 << 2)
 };
-typedef struct HarpCreatorBase {
-    HarpCreatorKind kind;
-    HarpCreatorFlags flags;
-} HarpCreatorBase;
 
-typedef struct HarpHandlerBase {
-    HarpName name;
-} HarpHandlerBase;
+typedef struct HarpDependencyDesc HarpDependencyDesc;
+typedef struct HarpPackageDesc HarpPackageDesc;
+typedef struct HarpHandlerDesc HarpHandlerDesc;
+typedef struct HarpActorDesc HarpActorDesc;
+typedef struct HarpApiDesc HarpApiDesc;
 
-typedef struct HarpActorBase {
-    HarpHandlerBase *p_parent;
-} HarpActorBase;
+typedef struct HarpApiBase HarpApiBase;
+typedef struct HarpHandlerBase HarpHandlerBase;
+typedef struct HarpActorBase HarpActorBase;
+typedef struct HarpCreatorBase HarpCreatorBase;
+
+typedef struct HarpCoreApi HarpCoreApi;
+typedef struct HarpExtendedApi HarpExtendedApi;
 
 
 /* ================================================================================ */
 /*  DESCRIPTORS                                                                     */
 /* ================================================================================ */
 
-typedef struct HarpPluginDesc {
+struct HarpDependencyDesc {
+    HarpName name;
+
+    HarpVersion min_version;
+    HarpVersion max_version;
+
+    uint8_t required; // 1 = must exist, 0 = optional
+};
+
+struct HarpPackageDesc {
     HarpName name;
     HarpVersion version;
 
@@ -74,50 +75,71 @@ typedef struct HarpPluginDesc {
     HarpResult (*pfn_init)(HarpApiBase *);
     HarpResult (*pfn_term)(HarpApiBase *);
 
-    HarpName* p_required_plugins;
-    HarpVersion* p_required_versions;
-    uint64_t required_count;
-} HarpPluginDesc;
+    HarpDependencyDesc* p_dependencies;
+    uint64_t dependency_count;
+};
 
-typedef struct HarpApiDesc {
-    HarpVersion version;
-    uint64_t instance_size;
-    HarpName name;
-} HarpApiDesc;
-
-typedef struct HarpHandlerDesc {
+struct HarpHandlerDesc {
     HarpVersion version;
     uint64_t instance_size;
 
-    HarpResult (*pfn_init)(struct HarpCoreApi*, HarpHandlerBase*, HarpCreatorBase*);
-    HarpResult (*pfn_term)(struct HarpCoreApi*, HarpHandlerBase*);
+    HarpResult (*pfn_init)(HarpCoreApi*, HarpHandlerBase*, HarpCreatorBase*);
+    HarpResult (*pfn_term)(HarpCoreApi*, HarpHandlerBase*);
 
     HarpName name;
-    HarpName* p_dep_names;
-    HarpVersion* p_dep_versions;
-    uint64_t dep_count;
-} HarpHandlerDesc;
+    HarpDependencyDesc* p_dependencies;
+    uint64_t dependency_count;
+};
 
-typedef struct HarpActorDesc {
+struct HarpActorDesc {
     HarpVersion version;
     uint64_t instance_size;
 
-    HarpResult (*pfn_create)(struct HarpCoreApi*, HarpActorBase*, HarpCreatorBase*);
-    HarpResult (*pfn_destroy)(struct HarpCoreApi*, HarpActorBase*);
+    HarpResult (*pfn_create)(HarpCoreApi*, HarpActorBase*, HarpCreatorBase*);
+    HarpResult (*pfn_destroy)(HarpCoreApi*, HarpActorBase*);
 
     HarpName name;
     HarpName parent;
-} HarpActorDesc;
+};
+
+struct HarpApiDesc {
+    HarpVersion version;
+    uint64_t instance_size;
+    HarpName name;
+};
 
 
 /* ================================================================================ */
-/*  CORE API                                                                        */
+/*  BASE STRUCTS                                                                    */
+/* ================================================================================ */
+
+struct HarpApiBase {
+    HarpVersion version;
+    uint8_t available; // 1 = available, 0 = unavailable
+};
+
+struct HarpHandlerBase {
+    HarpName name;
+};
+
+struct HarpActorBase {
+    HarpHandlerBase *p_parent;
+};
+
+struct HarpCreatorBase {
+    HarpCreatorKind kind;
+    HarpCreatorFlags flags;
+};
+
+
+/* ================================================================================ */
+/*  Application Programming Interface                                               */
 /* ================================================================================ */
 
 #define HARP_CORE_API_NAME "HarpCoreApi"
 #define HARP_CORE_API_VERSION HARP_MAKE_VERSION(1,0,0)
 
-typedef struct HarpCoreApi {
+struct HarpCoreApi {
     HarpApiBase base;
 
     /* Registration */
@@ -138,20 +160,15 @@ typedef struct HarpCoreApi {
 
     HarpResult (*actor_create)(const HarpName name, const HarpCreatorBase* creator, HarpActorBase** out_actor);
     HarpResult (*actor_destroy)(const HarpName name, HarpActorBase* actor);
-} HarpCoreApi;
-
-
-/* ================================================================================ */
-/*  EXTENDED API                                                                    */
-/* ================================================================================ */
+};
 
 #define HARP_EXTENDED_API_NAME "HarpExtendedApi"
 #define HARP_EXTENDED_API_VERSION HARP_MAKE_VERSION(0,0,0)
 
-typedef struct HarpExtendedApi {
+struct HarpExtendedApi {
     HarpApiBase base;
-    // Extendable API for plugin-specific extensions
-} HarpExtendedApi;
+    // Extendable API for package-specific extensions
+};
 
 
 #define HARP_UTILS_UNDEF

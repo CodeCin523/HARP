@@ -4,7 +4,7 @@ project(
     HARP
     VERSION 1.0.0
     DESCRIPTION
-        "HARP is a minimal runtime that orchestrates modular behavior through runtime-loaded plugins."
+        "HARP is a minimal runtime that orchestrates modular behavior through runtime-loaded packages."
     LANGUAGES C
 )
 
@@ -17,7 +17,7 @@ set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 
-# ---- plugin interface ----
+# ---- package interface ----
 if(HARP_BUILD_INTERFACE)
     add_library(Interface INTERFACE)
     add_library(HARP::Interface ALIAS Interface)
