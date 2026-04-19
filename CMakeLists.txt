@@ -17,6 +17,8 @@ set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 
+add_subdirectory(external)
+
 # ---- package interface ----
 if(HARP_BUILD_INTERFACE)
     add_library(Interface INTERFACE)
@@ -47,7 +49,7 @@ if(HARP_BUILD_LIBRARY)
     target_sources(
         Harp PRIVATE
         src/harp_core.c
-        src/impl/harp_registry.c   # 👈 make sure it's here
+        src/impl/harp_registry.c
     )
 
     target_compile_features(
@@ -60,6 +62,11 @@ if(HARP_BUILD_LIBRARY)
         PUBLIC
             $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
             $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
+    )
+
+    target_link_libraries(
+        Harp PRIVATE
+            memcc::memcc
     )
 endif()
 

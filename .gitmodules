@@ -1,0 +1,3 @@
+[submodule "external/memcc"]
+	path = external/memcc
+	url = https://github.com/CodeCin523/memcc.git
