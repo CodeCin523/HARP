@@ -3,17 +3,30 @@
 
 
 #include <harp/harp_core.h>
-#include "harp_registry.h"
+#include "registry.h"
 
-#include <memcc/memcc_stack.h>
+#include <hmem/hmem_arena.h>
+#include <hmem/hmem_book.h>
 
+
+typedef struct HarpPackageDescImpl {
+    HarpPackageDesc _base;
+} HarpPackageDescImpl;
+typedef struct HarpHandlerDescImpl {
+    HarpHandlerDesc _base;
+} HarpHandlerDescImpl;
+typedef struct HarpActorDescImpl {
+    HarpActorDesc _base;
+} HarpActorDescImpl;
+typedef struct HarpApiDescImpl {
+    HarpApiDesc _base;
+} HarpApiDescImpl;
 
 struct HarpRuntime {
-    HarpCoreApi api_core;
-    HarpExtendedApi api_extended;
     HarpRegistry registry;
 
-    memcc_dfstack_t dfstack_instance_data;
+    hmem_book_t desc_book;
+    hmem_arena_t desc_arena;
 };
 
 

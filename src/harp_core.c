@@ -10,10 +10,12 @@
 HarpResult harp_init(
     HarpRuntime **out_runtime
 ) {
+    // Alloc Runtime
     HarpRuntime *runtime = malloc(sizeof(HarpRuntime));
     if(!runtime)
         return HARP_RESULT_FAILED;
 
+    // Alloc Registry
     HarpRegistryEntry *entry_pool = malloc(sizeof(HarpRegistryEntry) * 128 * HARP_REGISTRY_BUCKET_COUNT);
     if(!entry_pool)
         return HARP_RESULT_FAILED;
@@ -25,36 +27,6 @@ HarpResult harp_init(
 
         entry_pool += 128;
     }
-
-    runtime->api_core.base.version = HARP_CORE_API_VERSION;
-
-    runtime->api_core.register_api = register_api;
-    runtime->api_core.register_handler = register_handler;
-    runtime->api_core.register_actor = register_actor;
-
-    runtime->api_core.get_api = get_api;
-    runtime->api_core.get_handler = get_handler;
-    runtime->api_core.get_api_desc = get_api_desc;
-    runtime->api_core.get_handler_desc = get_handler_desc;
-    runtime->api_core.get_actor_desc = get_actor_desc;
-
-    runtime->api_core.handler_initialize = handler_initialize;
-    runtime->api_core.handler_terminate = handler_terminate;
-
-    runtime->api_core.actor_create = actor_create;
-    runtime->api_core.actor_destroy = actor_destroy;
-
-    HarpRegistryEntry *core_api_entry = harp_registry_insert(runtime, &runtime->registry, HARP_CORE_API_NAME);
-    if(!core_api_entry)
-        return HARP_RESULT_FAILED;
-    core_api_entry->ptr = &runtime->api_core;
-    core_api_entry->type = HARP_REGISTRY_ENTRY_TYPE_API;
-
-    HarpRegistryEntry *extended_api_entry = harp_registry_insert(runtime, &runtime->registry, HARP_EXTENDED_API_NAME);
-    if(!core_api_entry)
-        return HARP_RESULT_FAILED;
-    core_api_entry->ptr = &runtime->api_extended;
-    core_api_entry->type = HARP_REGISTRY_ENTRY_TYPE_API;
 
     return HARP_RESULT_OK;
 }

@@ -1,5 +1,5 @@
-#ifndef IMPL_HARP_REGISTRY_H
-#define IMPL_HARP_REGISTRY_H
+#ifndef IMPL_REGISTRY_H
+#define IMPL_REGISTRY_H
 
 
 #include <harp/harp_core.h>
@@ -41,4 +41,4 @@ HarpRegistryEntry *harp_registry_find(HarpRuntime *runtime, HarpRegistry *regist
 void harp_registry_remove(HarpRuntime *runtime, HarpRegistry *registry, HarpName name);
 
 
-#endif /* IMPL_HARP_REGISTRY_H */
+#endif /* IMPL_REGISTRY_H */

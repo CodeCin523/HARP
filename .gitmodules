@@ -1,3 +1,3 @@
-[submodule "external/memcc"]
-	path = external/memcc
-	url = https://github.com/CodeCin523/memcc.git
+[submodule "external/hmem"]
+	path = external/hmem
+	url = https://github.com/CodeCin523/hmem.git

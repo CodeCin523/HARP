@@ -1,1 +1,1 @@
-add_subdirectory(memcc)
+add_subdirectory(hmem)
