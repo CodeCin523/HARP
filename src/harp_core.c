@@ -25,24 +25,21 @@ HarpResult harp_init(
     if (!runtime)
         return HARP_RESULT_FAILED;
 
-    HarpRegistryEntry *entry_pool =
-        malloc(sizeof(*entry_pool) *
-               128 *
-               HARP_REGISTRY_BUCKET_COUNT);
+    // Track progress for rollback
+    int bucket_i = 0;
 
-    if (!entry_pool)
-        goto fail_runtime;
+    for (; bucket_i < HARP_REGISTRY_BUCKET_COUNT; ++bucket_i) {
+        runtime->registry.buckets[bucket_i].entries =
+            malloc(sizeof(HarpRegistryEntry) * 8);
 
-    // Initialize registry
-    for (int i = 0; i < HARP_REGISTRY_BUCKET_COUNT; ++i) {
-        runtime->registry.buckets[i].entries  = entry_pool;
-        runtime->registry.buckets[i].capacity = 128;
-        runtime->registry.buckets[i].count    = 0;
+        if (!runtime->registry.buckets[bucket_i].entries)
+            goto fail_registry;
 
-        entry_pool += 128;
+        runtime->registry.buckets[bucket_i].capacity = 8;
+        runtime->registry.buckets[bucket_i].count = 0;
     }
 
-    // Setup descriptor memory
+    // Descriptor setup
     runtime->page_size =
         hmem_clamp(hmem_os_page_size(), 16384, SIZE_MAX);
 
@@ -62,18 +59,11 @@ HarpResult harp_init(
         goto fail_book;
     }
 
-    // Setup descriptor arena
-    if (!hmem_setup_arena(
-            &runtime->desc_arena,
-            &runtime->desc_book))
-    {
+    if (!hmem_setup_arena(&runtime->desc_arena, &runtime->desc_book))
         goto fail_pages;
-    }
 
     *out_runtime = runtime;
-
     return HARP_RESULT_OK;
-
 fail_pages:
     while (hmem_book_pop(&runtime->desc_book, &page)) {
         hmem_os_free_pages(page.pool, page.capacity);
@@ -83,12 +73,13 @@ fail_pages:
 fail_book:
     hmem_teardown_book(&runtime->desc_book);
 
+// rollback registry buckets
 fail_registry:
-    free(runtime->registry.buckets[0].entries);
+    for (int i = 0; i < bucket_i; ++i) {
+        free(runtime->registry.buckets[i].entries);
+    }
 
-fail_runtime:
     free(runtime);
-
     return HARP_RESULT_FAILED;
 }
 HarpResult harp_exit(
@@ -97,16 +88,9 @@ HarpResult harp_exit(
     if (!runtime)
         return HARP_RESULT_INVALID_ARGUMENTS;
 
-    // Unload actors
-    // Unload handlers
-    // Unload packages
-
-    // Destroy descriptor arena
     hmem_teardown_arena(&runtime->desc_arena);
 
-    // Release descriptor pages
     hmem_page_t page;
-
     while (hmem_book_pop(&runtime->desc_book, &page)) {
         hmem_os_free_pages(page.pool, page.capacity);
         hmem_teardown_page(&page);
@@ -114,12 +98,11 @@ HarpResult harp_exit(
 
     hmem_teardown_book(&runtime->desc_book);
 
-    // Release registry
-    free(runtime->registry.buckets[0].entries);
+    for (int i = 0; i < HARP_REGISTRY_BUCKET_COUNT; ++i) {
+        free(runtime->registry.buckets[i].entries);
+    }
 
-    // Release runtime
     free(runtime);
-
     return HARP_RESULT_OK;
 }
 
