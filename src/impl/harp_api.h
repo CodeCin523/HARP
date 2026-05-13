@@ -27,6 +27,8 @@ struct HarpRuntime {
 
     hmem_book_t desc_book;
     hmem_arena_t desc_arena;
+
+    size_t page_size;
 };
 
 
