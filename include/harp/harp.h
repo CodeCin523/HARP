@@ -5,10 +5,8 @@
 extern "C" {
 #endif
 
-
 #include <stddef.h>
 #include <stdint.h>
-
 
 #undef HARP_UTILS_UNDEF
 #include "utils/harp_version.h"
@@ -85,6 +83,7 @@ struct HarpHandlerDesc {
     HarpName name;
     HarpVersion version;
     uint64_t instance_size;
+    uint64_t instance_alignment;
 
     HarpResult (*pfn_init)(HarpCoreApi*, HarpHandlerBase*, HarpCreatorBase*);
     HarpResult (*pfn_term)(HarpCoreApi*, HarpHandlerBase*);
@@ -97,6 +96,7 @@ struct HarpActorDesc {
     HarpName name;
     HarpVersion version;
     uint64_t instance_size;
+    uint64_t instance_alignment;
 
     HarpResult (*pfn_create)(HarpCoreApi*, HarpActorBase*, HarpCreatorBase*);
     HarpResult (*pfn_destroy)(HarpCoreApi*, HarpActorBase*);
@@ -108,6 +108,7 @@ struct HarpApiDesc {
     HarpName name;
     HarpVersion version;
     uint64_t instance_size;
+    uint64_t instance_alignment;
 };
 
 
@@ -116,6 +117,7 @@ struct HarpApiDesc {
 /* ================================================================================ */
 
 struct HarpApiBase {
+    HarpHandlerBase* p_handler;
     HarpVersion version;
     uint8_t available; // 1 = available, 0 = unavailable
 };
@@ -143,26 +145,25 @@ struct HarpCreatorBase {
 
 struct HarpCoreApi {
     HarpApiBase _base;
-    HarpRuntime *p_runtime;
 
     /* Registration */
-    HarpResult (*register_api)(HarpCoreApi api, const HarpApiDesc* desc, HarpApiBase** out_api);
-    HarpResult (*register_handler)(HarpCoreApi api, const HarpHandlerDesc* desc);
-    HarpResult (*register_actor)(HarpCoreApi api, const HarpActorDesc* desc);
+    HarpResult (*register_api)(HarpHandlerBase *handler, const HarpApiDesc* desc, HarpApiBase** out_api);
+    HarpResult (*register_handler)(HarpHandlerBase *handler, const HarpHandlerDesc* desc);
+    HarpResult (*register_actor)(HarpHandlerBase *handler, const HarpActorDesc* desc);
 
     /* Retrieval */
-    HarpResult (*get_api)(HarpCoreApi api, const HarpName name, HarpApiBase **out_api);
-    HarpResult (*get_handler)(HarpCoreApi api, const HarpName name, HarpHandlerBase** out_handler);
-    HarpResult (*get_api_desc)(HarpCoreApi api, const HarpName name, HarpApiDesc **out_desc);
-    HarpResult (*get_handler_desc)(HarpCoreApi api, const HarpName name, HarpHandlerDesc** out_desc);
-    HarpResult (*get_actor_desc)(HarpCoreApi api, const HarpName name, HarpActorDesc** out_desc);
+    HarpResult (*get_api)(HarpHandlerBase *handler, const HarpName name, HarpApiBase **out_api);
+    HarpResult (*get_handler)(HarpHandlerBase *handler, const HarpName name, HarpHandlerBase** out_handler);
+    HarpResult (*get_api_desc)(HarpHandlerBase *handler, const HarpName name, HarpApiDesc **out_desc);
+    HarpResult (*get_handler_desc)(HarpHandlerBase *handler, const HarpName name, HarpHandlerDesc** out_desc);
+    HarpResult (*get_actor_desc)(HarpHandlerBase *handler, const HarpName name, HarpActorDesc** out_desc);
 
     /* Lifecycle */
-    HarpResult (*handler_initialize)(HarpCoreApi api, const HarpName name, const HarpCreatorBase* creator);
-    HarpResult (*handler_terminate)(HarpCoreApi api, const HarpName name);
+    HarpResult (*handler_initialize)(HarpHandlerBase *handler, const HarpName name, const HarpCreatorBase* creator);
+    HarpResult (*handler_terminate)(HarpHandlerBase *handler, const HarpName name);
 
-    HarpResult (*actor_create)(HarpCoreApi api, const HarpName name, const HarpCreatorBase* creator, HarpActorBase** out_actor);
-    HarpResult (*actor_destroy)(HarpCoreApi api, const HarpName name, HarpActorBase* actor);
+    HarpResult (*actor_create)(HarpHandlerBase *handler, const HarpName name, const HarpCreatorBase* creator, HarpActorBase** out_actor);
+    HarpResult (*actor_destroy)(HarpHandlerBase *handler, const HarpName name, HarpActorBase* actor);
 };
 
 #define HARP_EXTENDED_API_NAME "HarpExtendedApi"
@@ -177,7 +178,6 @@ struct HarpExtendedApi {
 #define HARP_UTILS_UNDEF
 #include "utils/harp_version.h"
 #undef HARP_UTILS_UNDEF
-
 
 #ifdef __cplusplus
 }

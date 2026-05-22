@@ -13,7 +13,7 @@
 #include <stdlib.h>
 
 
-HarpResult harp_init(
+HarpResult harp_initialize(
     HarpRuntime **out_runtime
 ) {
     if (!out_runtime)
@@ -82,7 +82,7 @@ fail_registry:
     free(runtime);
     return HARP_RESULT_FAILED;
 }
-HarpResult harp_exit(
+HarpResult harp_terminate(
     HarpRuntime *runtime
 ) {
     if (!runtime)
@@ -106,7 +106,7 @@ HarpResult harp_exit(
     return HARP_RESULT_OK;
 }
 
-HarpResult harp_runtime_load_packages(
+HarpResult harp_runtime_load_directory(
     HarpRuntime *runtime,
     const char *path
 ) {
@@ -120,8 +120,15 @@ HarpResult harp_runtime_get_api(
 ) {
     
 }
+HarpResult harp_runtime_get_handler(
+    HarpRuntime *runtime,
+    const HarpName name,
+    HarpHandlerBase **out_handler
+) {
 
-HarpResult harp_runtime_get_package_count(
+}
+
+/* HarpResult harp_runtime_get_package_count(
     HarpRuntime *runtime,
     uint64_t *out_count
 ) {
@@ -133,7 +140,7 @@ HarpResult harp_runtime_get_package_name(
     HarpName *out_name
 ) {
     
-}
+} */
 
 
 /* wouldn't work, since the api is first element of runtime, we need manual allocation or at least overwrite

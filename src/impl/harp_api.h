@@ -6,6 +6,7 @@
 #include "registry.h"
 
 #include <hmem/hmem_arena.h>
+#include <hmem/hmem_block.h>
 #include <hmem/hmem_book.h>
 
 
@@ -17,12 +18,17 @@ typedef struct HarpHandlerDescImpl {
 } HarpHandlerDescImpl;
 typedef struct HarpActorDescImpl {
     HarpActorDesc _base;
+    hmem_book_t inst_book;
+    hmem_block_t inst_block;
 } HarpActorDescImpl;
 typedef struct HarpApiDescImpl {
     HarpApiDesc _base;
+    HarpApiBase *p_api;
 } HarpApiDescImpl;
 
 struct HarpRuntime {
+    HarpHandlerBase _base;
+
     HarpRegistry registry;
 
     hmem_book_t desc_book;
@@ -32,21 +38,21 @@ struct HarpRuntime {
 };
 
 
-HarpResult register_api(HarpCoreApi api, const HarpApiDesc* desc, HarpApiBase** out_api);
-HarpResult register_handler(HarpCoreApi api, const HarpHandlerDesc* desc);
-HarpResult register_actor(HarpCoreApi api, const HarpActorDesc* desc);
+HarpResult register_api(HarpHandlerBase *handler, const HarpApiDesc* desc, HarpApiBase** out_api);
+HarpResult register_handler(HarpHandlerBase *handler, const HarpHandlerDesc* desc);
+HarpResult register_actor(HarpHandlerBase *handler, const HarpActorDesc* desc);
 
-HarpResult get_api(HarpCoreApi api, const HarpName name, HarpApiBase **out_api);
-HarpResult get_handler(HarpCoreApi api, const HarpName name, HarpHandlerBase** out_handler);
-HarpResult get_api_desc(HarpCoreApi api, const HarpName name, HarpApiDesc **out_desc);
-HarpResult get_handler_desc(HarpCoreApi api, const HarpName name, HarpHandlerDesc** out_desc);
-HarpResult get_actor_desc(HarpCoreApi api, const HarpName name, HarpActorDesc** out_desc);
+HarpResult get_api(HarpHandlerBase *handler, const HarpName name, HarpApiBase **out_api);
+HarpResult get_handler(HarpHandlerBase *handler, const HarpName name, HarpHandlerBase** out_handler);
+HarpResult get_api_desc(HarpHandlerBase *handler, const HarpName name, HarpApiDesc **out_desc);
+HarpResult get_handler_desc(HarpHandlerBase *handler, const HarpName name, HarpHandlerDesc** out_desc);
+HarpResult get_actor_desc(HarpHandlerBase *handler, const HarpName name, HarpActorDesc** out_desc);
 
-HarpResult handler_initialize(HarpCoreApi api, const HarpName name, const HarpCreatorBase* creator);
-HarpResult handler_terminate(HarpCoreApi api, const HarpName name);
+HarpResult handler_initialize(HarpHandlerBase *handler, const HarpName name, const HarpCreatorBase* creator);
+HarpResult handler_terminate(HarpHandlerBase *handler, const HarpName name);
 
-HarpResult actor_create(HarpCoreApi api, const HarpName name, const HarpCreatorBase* creator, HarpActorBase** out_actor);
-HarpResult actor_destroy(HarpCoreApi api, const HarpName name, HarpActorBase* actor);
+HarpResult actor_create(HarpHandlerBase *handler, const HarpName name, const HarpCreatorBase* creator, HarpActorBase** out_actor);
+HarpResult actor_destroy(HarpHandlerBase *handler, const HarpName name, HarpActorBase* actor);
 
 
 #endif /* IMPL_HARP_API_H */
