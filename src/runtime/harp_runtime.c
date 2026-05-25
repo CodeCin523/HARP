@@ -1,6 +1,9 @@
 #include "harp_runtime.h"
 
 #include <hmem/hmem_os.h>
+#include <hmem/utils/hmem_align.h>
+
+#include <stdlib.h>
 
 
 HarpResult harp_setup_runtime(HarpRuntime *runtime) {

@@ -5,6 +5,7 @@
 
 #define HMEM_IMPLEMENTATION
 #include <hmem/hmem_arena.h>
+#include <hmem/hmem_block.h>
 #include <hmem/hmem_book.h>
 #include <hmem/hmem_os.h>
 
