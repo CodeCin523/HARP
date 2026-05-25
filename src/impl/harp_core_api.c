@@ -2,7 +2,9 @@
 #include "runtime/harp_runtime.h"
 
 #include "hmem/hmem_os.h"
+
 #include <string.h>
+#include <stdalign.h>
 
 
 static HarpRuntime* harp_runtime_from_handler(HarpHandlerBase *handler) {
@@ -170,7 +172,26 @@ HarpResult get_api(
     const HarpName name,
     HarpApiBase **out_api
 ) {
+    if(handler == NULL || name == NULL)
+        return HARP_RESULT_INVALID_ARGUMENTS;
 
+    if(out_api == NULL)
+        return HARP_RESULT_MISSING_OUTPUT;
+
+    *out_api = NULL;
+
+    HarpRuntime *runtime = (HarpRuntime*)handler;
+
+    // Try to find entry
+    HarpRegistryEntry *entry =
+        harp_registry_find(runtime, &runtime->registry, name);
+    if(entry == NULL)
+        return HARP_RESULT_NAME_NOT_FOUND;
+    if(entry->type != HARP_REGISTRY_ENTRY_TYPE_API || entry->p_inst == NULL)
+        return HARP_RESULT_FAILED;
+
+    *out_api = entry->p_inst;
+    return HARP_RESULT_OK;
 }
 
 HarpResult get_handler(
@@ -178,7 +199,26 @@ HarpResult get_handler(
     const HarpName name,
     HarpHandlerBase **out_handler
 ) {
+    if(handler == NULL || name == NULL)
+        return HARP_RESULT_INVALID_ARGUMENTS;
 
+    if(out_handler == NULL)
+        return HARP_RESULT_MISSING_OUTPUT;
+
+    *out_handler = NULL;
+
+    HarpRuntime *runtime = (HarpRuntime*)handler;
+
+    // Try to find entry
+    HarpRegistryEntry *entry =
+        harp_registry_find(runtime, &runtime->registry, name);
+    if(entry == NULL)
+        return HARP_RESULT_NAME_NOT_FOUND;
+    if(entry->type != HARP_REGISTRY_ENTRY_TYPE_HANDLER || entry->p_inst == NULL)
+        return HARP_RESULT_FAILED;
+
+    *out_handler = entry->p_inst;
+    return HARP_RESULT_OK;
 }
 
 HarpResult get_api_desc(
@@ -186,7 +226,26 @@ HarpResult get_api_desc(
     const HarpName name,
     HarpApiDesc **out_desc
 ) {
+    if(handler == NULL || name == NULL)
+        return HARP_RESULT_INVALID_ARGUMENTS;
 
+    if(out_desc == NULL)
+        return HARP_RESULT_MISSING_OUTPUT;
+
+    *out_desc = NULL;
+
+    HarpRuntime *runtime = (HarpRuntime*)handler;
+
+    // Try to find entry
+    HarpRegistryEntry *entry =
+        harp_registry_find(runtime, &runtime->registry, name);
+    if(entry == NULL)
+        return HARP_RESULT_NAME_NOT_FOUND;
+    if(entry->type != HARP_REGISTRY_ENTRY_TYPE_API || entry->p_desc == NULL)
+        return HARP_RESULT_FAILED;
+
+    *out_desc = &((HarpApiRuntimeDesc*)entry->p_desc)->_base;
+    return HARP_RESULT_OK;
 }
 
 HarpResult get_handler_desc(
@@ -194,7 +253,26 @@ HarpResult get_handler_desc(
     const HarpName name,
     HarpHandlerDesc **out_desc
 ) {
+    if(handler == NULL || name == NULL)
+        return HARP_RESULT_INVALID_ARGUMENTS;
 
+    if(out_desc == NULL)
+        return HARP_RESULT_MISSING_OUTPUT;
+
+    *out_desc = NULL;
+
+    HarpRuntime *runtime = (HarpRuntime*)handler;
+
+    // Try to find entry
+    HarpRegistryEntry *entry =
+        harp_registry_find(runtime, &runtime->registry, name);
+    if(entry == NULL)
+        return HARP_RESULT_NAME_NOT_FOUND;
+    if(entry->type != HARP_REGISTRY_ENTRY_TYPE_HANDLER || entry->p_desc == NULL)
+        return HARP_RESULT_FAILED;
+
+    *out_desc = &((HarpHandlerRuntimeDesc*)entry->p_desc)->_base;
+    return HARP_RESULT_OK;
 }
 
 HarpResult get_actor_desc(
@@ -202,7 +280,26 @@ HarpResult get_actor_desc(
     const HarpName name,
     HarpActorDesc **out_desc
 ) {
+    if(handler == NULL || name == NULL)
+        return HARP_RESULT_INVALID_ARGUMENTS;
 
+    if(out_desc == NULL)
+        return HARP_RESULT_MISSING_OUTPUT;
+
+    *out_desc = NULL;
+
+    HarpRuntime *runtime = (HarpRuntime*)handler;
+
+    // Try to find entry
+    HarpRegistryEntry *entry =
+        harp_registry_find(runtime, &runtime->registry, name);
+    if(entry == NULL)
+        return HARP_RESULT_NAME_NOT_FOUND;
+    if(entry->type != HARP_REGISTRY_ENTRY_TYPE_ACTOR || entry->p_desc == NULL)
+        return HARP_RESULT_FAILED;
+
+    *out_desc = &((HarpActorRuntimeDesc*)entry->p_desc)->_base;
+    return HARP_RESULT_OK;
 }
 
 
