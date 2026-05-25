@@ -47,6 +47,8 @@ HarpResult harp_setup_runtime(HarpRuntime *runtime) {
     if (!hmem_setup_arena(&runtime->global_arena, &runtime->global_book))
         goto fail_pages;
 
+    runtime->core_api = NULL;
+
     return HARP_RESULT_OK;
 fail_pages:
     while (hmem_book_pop(&runtime->global_book, &page)) {

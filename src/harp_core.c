@@ -60,6 +60,10 @@ HarpResult harp_initialize(
     core_api->get_handler_desc = get_handler_desc;
     core_api->get_actor_desc = get_actor_desc;
 
+    core_api->handler_initialize = handler_initialize;
+    core_api->handler_terminate = handler_terminate;
+
+    runtime->core_api = core_api;
     core_api_base->available = 1;
 
     *out_runtime = runtime;

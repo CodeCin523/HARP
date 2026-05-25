@@ -9,16 +9,30 @@
 #include <hmem/hmem_book.h>
 
 
+typedef enum HarpRuntimeState HarpRuntimeState; 
+
 typedef struct HarpPackageRuntimeDesc HarpPackageRuntimeDesc;
 typedef struct HarpHandlerRuntimeDesc HarpHandlerRuntimeDesc;
 typedef struct HarpActorRuntimeDesc HarpActorRuntimeDesc;
 typedef struct HarpApiRuntimeDesc HarpApiRuntimeDesc;
+
+enum HarpRuntimeState {
+    HARP_RUNTIME_STATE_UNINITIALIZED,
+    HARP_RUNTIME_STATE_INITIALIZING,
+    HARP_RUNTIME_STATE_INITIALIZED,
+    HARP_RUNTIME_STATE_TERMINATING,
+};
 
 struct HarpPackageRuntimeDesc {
     HarpPackageDesc _base;
 };
 struct HarpHandlerRuntimeDesc {
     HarpHandlerDesc _base;
+
+    uint32_t dependent_count;
+    uint32_t actor_count;
+
+    HarpRuntimeState state;
 };
 struct HarpActorRuntimeDesc {
     HarpActorDesc _base;
@@ -33,6 +47,8 @@ struct HarpRuntime {
     HarpHandlerBase _base;
 
     HarpRegistry registry;
+
+    HarpCoreApi *core_api;
 
     hmem_book_t global_book;
     hmem_arena_t global_arena;

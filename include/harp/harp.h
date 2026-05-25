@@ -18,12 +18,22 @@ extern "C" {
 
 typedef uint32_t HarpResult;
 enum {
-    HARP_RESULT_OK                  = 0,  // Success
-    HARP_RESULT_FAILED              = 1,  // Generic failure
-    HARP_RESULT_INVALID_ARGUMENTS   = 10, // One or more arguments are invalid
-    HARP_RESULT_MISSING_OUTPUT      = 11, // Output pointer required, but NULL
-    HARP_RESULT_NAME_EXISTS         = 20, // The given name already as an entry
-    HARP_RESULT_NAME_NOT_FOUND      = 21, // Entry with given name not found
+    HARP_RESULT_OK                          = 0,  // Success
+    HARP_RESULT_FAILED                      = 1,  // Generic failure
+    HARP_RESULT_CRITICAL_FAIL               = 2,
+    HARP_RESULT_INVALID_STATE               = 3,
+    HARP_RESULT_OUT_OF_MEMORY               = 4,
+    HARP_RESULT_INVALID_ARGUMENTS           = 10, // One or more arguments are invalid
+    HARP_RESULT_MISSING_OUTPUT              = 11, // Output pointer required, but NULL
+    HARP_RESULT_NAME_EXISTS                 = 20, // The given name already as an entry
+    HARP_RESULT_NAME_NOT_FOUND              = 21, // Entry with given name not found
+    HARP_RESULT_NAME_TYPE_MISMATCH          = 22,
+    HARP_RESULT_DEPENDENCY_NOT_FOUND        = 30,
+    HARP_RESULT_DEPENDENCY_VERSION_MISMATCH = 31,
+    HARP_RESULT_DEPENDENCY_UNINITIALIZED    = 32,
+    HARP_RESULT_DEPENDENCY_CYCLE            = 33,
+    HARP_RESULT_EXISTENT_DEPENDENTS         = 34,
+    HARP_RESULT_EXISTENT_ACTORS             = 35,
 };
 
 typedef const char* HarpName;
@@ -64,7 +74,7 @@ struct HarpDependencyDesc {
     HarpVersion min_version;
     HarpVersion max_version;
 
-    uint8_t required; // 1 = must exist, 0 = optional
+    // uint8_t required; // 1 = must exist, 0 = optional
 };
 
 struct HarpPackageDesc {
@@ -101,7 +111,7 @@ struct HarpActorDesc {
     HarpResult (*pfn_create)(HarpCoreApi*, HarpActorBase*, HarpCreatorBase*);
     HarpResult (*pfn_destroy)(HarpCoreApi*, HarpActorBase*);
 
-    HarpName parent;
+    HarpName parent_handler;
 };
 
 struct HarpApiDesc {
