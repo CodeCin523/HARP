@@ -41,6 +41,9 @@ struct HarpRuntime {
 };
 
 
+HarpResult harp_setup_runtime(HarpRuntime *runtime);
+void harp_teardown_runtime(HarpRuntime *runtime);
+
 void *harp_runtime_global_alloc(HarpRuntime *runtime, size_t size, size_t alignment);
 
 

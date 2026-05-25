@@ -1,6 +1,8 @@
 #include <harp/harp_core.h>
 #include "impl/harp_core_api.h"
 
+#include "runtime/harp_runtime.h"
+
 #define HMEM_IMPLEMENTATION
 #include <hmem/hmem_arena.h>
 #include <hmem/hmem_book.h>
@@ -11,96 +13,64 @@
 #include <harp/utils/harp_version.h>
 
 #include <stdlib.h>
+#include <string.h>
 
 
 HarpResult harp_initialize(
     HarpRuntime **out_runtime
 ) {
-    if (!out_runtime)
+    if(out_runtime == NULL)
         return HARP_RESULT_MISSING_OUTPUT;
 
     *out_runtime = NULL;
 
-    HarpRuntime *runtime = malloc(sizeof(*runtime));
-    if (!runtime)
+    HarpRuntime *runtime = malloc(sizeof(HarpRuntime));
+
+    if(runtime == NULL)
         return HARP_RESULT_FAILED;
 
-    // Track progress for rollback
-    int bucket_i = 0;
+    if(harp_setup_runtime(runtime) != HARP_RESULT_OK)
+        goto fail_runtime;
 
-    for (; bucket_i < HARP_REGISTRY_BUCKET_COUNT; ++bucket_i) {
-        runtime->registry.buckets[bucket_i].entries =
-            malloc(sizeof(HarpRegistryEntry) * 8);
+    // Register core API
+    HarpApiDesc core_api_desc = {
+        .name = HARP_CORE_API_NAME,
+        .version = HARP_CORE_API_VERSION,
+        .instance_size = sizeof(HarpCoreApi),
+        .instance_alignment = alignof(HarpCoreApi)
+    };
 
-        if (!runtime->registry.buckets[bucket_i].entries)
-            goto fail_registry;
+    HarpApiBase *core_api_base = NULL;
 
-        runtime->registry.buckets[bucket_i].capacity = 8;
-        runtime->registry.buckets[bucket_i].count = 0;
-    }
+    if(register_api((HarpHandlerBase *)runtime, &core_api_desc, &core_api_base) != HARP_RESULT_OK)
+        goto fail_setup;
 
-    // Descriptor setup
-    runtime->page_size =
-        hmem_clamp(hmem_os_page_size(), 16384, SIZE_MAX);
+    core_api_base->p_handler = (HarpHandlerBase *)runtime;
 
-    if (!hmem_setup_book(&runtime->desc_book, 16))
-        goto fail_registry;
+    HarpCoreApi *core_api = (HarpCoreApi *)core_api_base;
 
-    hmem_page_t page = {0};
+    core_api->register_api = register_api;
+    core_api->register_handler = register_handler;
+    core_api->register_actor = register_actor;
 
-    page.pool = hmem_os_alloc_pages(runtime->page_size);
-    if (!page.pool)
-        goto fail_book;
-
-    page.capacity = runtime->page_size;
-
-    if (!hmem_book_push(&runtime->desc_book, &page)) {
-        hmem_os_free_pages(page.pool, page.capacity);
-        goto fail_book;
-    }
-
-    if (!hmem_setup_arena(&runtime->desc_arena, &runtime->desc_book))
-        goto fail_pages;
+    core_api_base->available = 1;
 
     *out_runtime = runtime;
     return HARP_RESULT_OK;
-fail_pages:
-    while (hmem_book_pop(&runtime->desc_book, &page)) {
-        hmem_os_free_pages(page.pool, page.capacity);
-        hmem_teardown_page(&page);
-    }
 
-fail_book:
-    hmem_teardown_book(&runtime->desc_book);
+fail_setup:
+    harp_teardown_runtime(runtime);
 
-// rollback registry buckets
-fail_registry:
-    for (int i = 0; i < bucket_i; ++i) {
-        free(runtime->registry.buckets[i].entries);
-    }
-
+fail_runtime:
     free(runtime);
     return HARP_RESULT_FAILED;
 }
 HarpResult harp_terminate(
     HarpRuntime *runtime
 ) {
-    if (!runtime)
-        return HARP_RESULT_INVALID_ARGUMENTS;
+    if(runtime == NULL) return HARP_RESULT_INVALID_ARGUMENTS;
 
-    hmem_teardown_arena(&runtime->desc_arena);
-
-    hmem_page_t page;
-    while (hmem_book_pop(&runtime->desc_book, &page)) {
-        hmem_os_free_pages(page.pool, page.capacity);
-        hmem_teardown_page(&page);
-    }
-
-    hmem_teardown_book(&runtime->desc_book);
-
-    for (int i = 0; i < HARP_REGISTRY_BUCKET_COUNT; ++i) {
-        free(runtime->registry.buckets[i].entries);
-    }
+    harp_teardown_runtime(runtime);
 
     free(runtime);
     return HARP_RESULT_OK;

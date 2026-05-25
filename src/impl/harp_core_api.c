@@ -56,7 +56,7 @@ HarpResult register_api(
 
     // Initialize API base
     rinst->version = desc->version;
-    rinst->available = 1;
+    rinst->available = 0;
 
     // Finalize registry entry
     entry->p_desc = rdesc;
