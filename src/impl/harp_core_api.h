@@ -1,41 +1,7 @@
 #ifndef IMPL_HARP_API_H
 #define IMPL_HARP_API_H
 
-
 #include <harp/harp_core.h>
-#include "registry.h"
-
-#include <hmem/hmem_arena.h>
-#include <hmem/hmem_block.h>
-#include <hmem/hmem_book.h>
-
-
-typedef struct HarpPackageDescImpl {
-    HarpPackageDesc _base;
-} HarpPackageDescImpl;
-typedef struct HarpHandlerDescImpl {
-    HarpHandlerDesc _base;
-} HarpHandlerDescImpl;
-typedef struct HarpActorDescImpl {
-    HarpActorDesc _base;
-    hmem_book_t inst_book;
-    hmem_block_t inst_block;
-} HarpActorDescImpl;
-typedef struct HarpApiDescImpl {
-    HarpApiDesc _base;
-    HarpApiBase *p_api;
-} HarpApiDescImpl;
-
-struct HarpRuntime {
-    HarpHandlerBase _base;
-
-    HarpRegistry registry;
-
-    hmem_book_t desc_book;
-    hmem_arena_t desc_arena;
-
-    size_t page_size;
-};
 
 
 HarpResult register_api(HarpHandlerBase *handler, const HarpApiDesc* desc, HarpApiBase** out_api);

@@ -49,8 +49,10 @@ if(HARP_BUILD_LIBRARY)
 
     target_sources(
         Harp PRIVATE
+        src/impl/harp_core_api.c
+        src/runtime/harp_registry.c
+        src/runtime/harp_runtime.c
         src/harp_core.c
-        src/impl/registry.c
     )
 
     target_compile_features(

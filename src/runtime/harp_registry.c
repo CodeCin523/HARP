@@ -1,4 +1,4 @@
-#include "registry.h"
+#include "harp_registry.h"
 
 #include <stdint.h>
 #include <string.h>

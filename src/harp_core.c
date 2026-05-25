@@ -1,5 +1,5 @@
 #include <harp/harp_core.h>
-#include "impl/harp_api.h"
+#include "impl/harp_core_api.h"
 
 #define HMEM_IMPLEMENTATION
 #include <hmem/hmem_arena.h>

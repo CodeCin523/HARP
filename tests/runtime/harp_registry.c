@@ -1,7 +1,7 @@
 #include <assert.h>
 #include <stdlib.h>
 #include <stdio.h>
-#include <impl/harp_registry.h>
+#include <runtime/harp_registry.h>
 
 static void setup_registry(HarpRegistry *r) {
     for (uint32_t i = 0; i < HARP_REGISTRY_BUCKET_COUNT; i++) {

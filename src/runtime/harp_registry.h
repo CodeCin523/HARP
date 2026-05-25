@@ -1,5 +1,5 @@
-#ifndef IMPL_REGISTRY_H
-#define IMPL_REGISTRY_H
+#ifndef RUNTIME_REGISTRY_H
+#define RUNTIME_REGISTRY_H
 
 
 #include <harp/harp_core.h>
@@ -17,10 +17,13 @@ enum {
 };
 
 typedef struct {
-    HarpName name;             // Name of the registered object
-    void *ptr;                 // Pointer to the object (API/handler/actor)
+    HarpName name;              // Name of the registered object
+
     uint32_t hash;              // The full hash of the name
-    HarpRegistryEntryType type;// Type tag
+    HarpRegistryEntryType type; // Type tag
+
+    void *p_desc;
+    void *p_inst;
 } HarpRegistryEntry;
 
 typedef struct {
@@ -38,7 +41,8 @@ uint32_t harp_registry_hash(HarpName name);
 
 HarpRegistryEntry *harp_registry_insert(HarpRuntime *runtime, HarpRegistry *registry, HarpName name);
 HarpRegistryEntry *harp_registry_find(HarpRuntime *runtime, HarpRegistry *registry, HarpName name);
+
 void harp_registry_remove(HarpRuntime *runtime, HarpRegistry *registry, HarpName name);
 
 
-#endif /* IMPL_REGISTRY_H */
+#endif /* RUNTIME_REGISTRY_H */

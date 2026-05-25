@@ -1,58 +1,12 @@
-#include "harp_api.h"
+#include "harp_core_api.h"
+#include "runtime/harp_runtime.h"
+
 #include "hmem/hmem_os.h"
 #include <string.h>
 
 
 static HarpRuntime* harp_runtime_from_handler(HarpHandlerBase *handler) {
     return (HarpRuntime*)handler;
-}
-static void* harp_desc_alloc(
-    HarpRuntime *runtime,
-    size_t size,
-    size_t alignment
-) {
-    if(runtime == NULL || size == 0 || alignment == 0)
-        return NULL;
-
-    // First allocation attempt
-    void *ptr = hmem_arena_alloc(
-        &runtime->desc_arena,
-        size,
-        alignment
-    );
-
-    if(ptr != NULL)
-        return ptr;
-
-    // Arena exhausted: allocate a new OS-backed page
-    hmem_page_t page = {0};
-
-    page.pool = hmem_os_alloc_pages(runtime->page_size);
-
-    if(page.pool == NULL)
-        return NULL;
-
-    page.capacity = runtime->page_size;
-
-    // Push page into descriptor book
-    if(!hmem_book_push(
-        &runtime->desc_book,
-        &page
-    )) {
-        hmem_os_free_pages(
-            page.pool,
-            page.capacity
-        );
-
-        return NULL;
-    }
-
-    // Retry allocation after growth
-    return hmem_arena_alloc(
-        &runtime->desc_arena,
-        size,
-        alignment
-    );
 }
 
 
@@ -82,35 +36,34 @@ HarpResult register_api(
         return HARP_RESULT_NAME_EXISTS;
 
     // Allocate descriptor implementation
-    HarpApiDescImpl *impl =
-        harp_desc_alloc( runtime, sizeof(HarpApiDescImpl), alignof(HarpApiDescImpl) );
-    if(impl == NULL)
+    HarpApiRuntimeDesc *rdesc =
+        harp_runtime_global_alloc( runtime, sizeof(HarpApiRuntimeDesc), alignof(HarpApiRuntimeDesc) );
+    if(rdesc == NULL)
         return HARP_RESULT_FAILED;
 
-    memset(impl, 0, sizeof(HarpApiDescImpl));
+    memset(rdesc, 0, sizeof(HarpApiRuntimeDesc));
 
     // Allocate API instance
-    HarpApiBase *api =
-        harp_desc_alloc( runtime, desc->instance_size, desc->instance_alignment );
-    if(api == NULL)
+    HarpApiBase *rinst =
+        harp_runtime_global_alloc( runtime, desc->instance_size, desc->instance_alignment );
+    if(rinst == NULL)
         return HARP_RESULT_FAILED;
 
-    memset(api, 0, desc->instance_size);
+    memset(rinst, 0, desc->instance_size);
 
     // Copy descriptor metadata
-    impl->_base = *desc;
-    impl->p_api = api;
+    rdesc->_base = *desc;
 
     // Initialize API base
-    api->version = desc->version;
-    api->available = 1;
-    api->p_handler = handler;
+    rinst->version = desc->version;
+    rinst->available = 1;
 
     // Finalize registry entry
-    entry->ptr = impl;
+    entry->p_desc = rdesc;
+    entry->p_inst = rinst;
     entry->type = HARP_REGISTRY_ENTRY_TYPE_API;
 
-    *out_api = api;
+    *out_api = rinst;
 
     return HARP_RESULT_OK;
 }
@@ -130,35 +83,35 @@ HarpResult register_handler(
     if(entry == NULL)
         return HARP_RESULT_NAME_EXISTS;
 
-    // Allocate handler descriptor implementation
-    HarpHandlerDescImpl *impl =
-        harp_desc_alloc( runtime, sizeof(HarpHandlerDescImpl), alignof(HarpHandlerDescImpl) );
-    if(impl == NULL)
+    // Allocate runtime descriptor
+    HarpHandlerRuntimeDesc *rdesc =
+        harp_runtime_global_alloc( runtime, sizeof(HarpHandlerRuntimeDesc), alignof(HarpHandlerRuntimeDesc) );
+    if(rdesc == NULL)
         return HARP_RESULT_FAILED;
 
-    memset(impl, 0, sizeof(HarpHandlerDescImpl));
+    memset(rdesc, 0, sizeof(HarpHandlerRuntimeDesc));
 
     // Allocate handler instance
-    HarpHandlerBase *new_handler =
-        harp_desc_alloc( runtime, desc->instance_size, desc->instance_alignment );
-    if(new_handler == NULL)
+    HarpHandlerBase *rinst =
+        harp_runtime_global_alloc( runtime, desc->instance_size, desc->instance_alignment );
+    if(rinst == NULL)
         return HARP_RESULT_FAILED;
 
-    memset(new_handler, 0, desc->instance_size);
+    memset(rinst, 0, desc->instance_size);
 
     // Copy descriptor metadata
-    impl->_base = *desc;
+    rdesc->_base = *desc;
 
     // Initialize handler base
-    new_handler->name = desc->name;
+    rinst->name = desc->name;
 
     // Finalize registry entry
-    entry->ptr = impl;
+    entry->p_desc = rdesc;
+    entry->p_inst = rinst;
     entry->type = HARP_REGISTRY_ENTRY_TYPE_HANDLER;
 
     return HARP_RESULT_OK;
 }
-
 
 HarpResult register_actor(
     HarpHandlerBase *handler,
@@ -175,19 +128,33 @@ HarpResult register_actor(
     if(entry == NULL)
         return HARP_RESULT_NAME_EXISTS;
 
-    // Allocate actor descriptor implementation
-    HarpActorDescImpl *impl =
-        harp_desc_alloc( runtime, sizeof(HarpActorDescImpl), alignof(HarpActorDescImpl) );
-    if(impl == NULL)
+    // Allocate actor runtime descriptor
+    HarpActorRuntimeDesc *rdesc =
+        harp_runtime_global_alloc( runtime, sizeof(HarpActorRuntimeDesc), alignof(HarpActorRuntimeDesc) );
+    if(rdesc == NULL)
         return HARP_RESULT_FAILED;
 
-    memset(impl, 0, sizeof(HarpActorDescImpl));
+    memset(rdesc, 0, sizeof(HarpActorRuntimeDesc));
 
     // Copy descriptor metadata
-    impl->_base = *desc;
+    rdesc->_base = *desc;
+
+    // Setup actor instance storage
+    if(!hmem_setup_book(&rdesc->inst_book, 16))
+        return HARP_RESULT_FAILED;
+    if(!hmem_setup_block(
+        &rdesc->inst_block,
+        &rdesc->inst_book,
+        desc->instance_size,
+        desc->instance_alignment
+    )) {
+        hmem_teardown_book(&rdesc->inst_book);
+        return HARP_RESULT_FAILED;
+    }
 
     // Finalize registry entry
-    entry->ptr = impl;
+    entry->p_desc = rdesc;
+    entry->p_inst = NULL;
     entry->type = HARP_REGISTRY_ENTRY_TYPE_ACTOR;
 
     return HARP_RESULT_OK;
