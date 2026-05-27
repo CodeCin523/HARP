@@ -127,7 +127,7 @@ struct HarpApiDesc {
 /* ================================================================================ */
 
 struct HarpApiBase {
-    HarpHandlerBase* p_handler;
+    HarpHandlerBase *p_handler;
     HarpVersion version;
     uint8_t available; // 1 = available, 0 = unavailable
 };
@@ -137,7 +137,8 @@ struct HarpHandlerBase {
 };
 
 struct HarpActorBase {
-    HarpHandlerBase *p_parent;
+    HarpName name;
+    HarpHandlerBase *p_handler;
 };
 
 struct HarpCreatorBase {

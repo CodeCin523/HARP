@@ -1,7 +1,8 @@
 #include "harp_core_api.h"
 #include "runtime/harp_runtime.h"
 
-#include "hmem/hmem_os.h"
+#include <hmem/hmem_block.h>
+#include <hmem/hmem_os.h>
 
 #include <string.h>
 #include <stdalign.h>
@@ -505,7 +506,7 @@ HarpResult handler_initialize(
     if(rdesc->state != HARP_RUNTIME_STATE_UNINITIALIZED)
         return HARP_RESULT_INVALID_STATE;
     
-    // check dependencies
+    // check dependencies (code repeated, could be placed into a function)
     for(uint64_t i = 0; i < desc->dependency_count; ++i) {
         HarpDependencyDesc *ddep = &desc->p_dependencies[i];
         HarpRegistryEntry *dentry =
@@ -629,7 +630,93 @@ HarpResult actor_create(
     const HarpCreatorBase *creator,
     HarpActorBase **out_actor
 ) {
+    if(handler == NULL || name == NULL || creator == NULL)
+        return HARP_RESULT_INVALID_ARGUMENTS;
+    if(out_actor == NULL)
+        return HARP_RESULT_MISSING_OUTPUT;
 
+    HarpRuntime *runtime = (HarpRuntime*)handler;
+    *out_actor = NULL;
+
+    // find the actor
+    HarpRegistryEntry *actor_entry =
+        harp_registry_find(runtime, &runtime->registry, name);
+    if(actor_entry == NULL)
+        return HARP_RESULT_NAME_NOT_FOUND;
+    if(actor_entry->type != HARP_REGISTRY_ENTRY_TYPE_ACTOR)
+        return HARP_RESULT_NAME_TYPE_MISMATCH;
+
+    HarpActorRuntimeDesc *actor_rdesc = actor_entry->p_desc;
+    if(actor_rdesc == NULL)
+        return HARP_RESULT_CRITICAL_FAIL;
+    
+    HarpActorDesc *actor_desc = &actor_rdesc->_base;
+
+    // find the handler
+    HarpRegistryEntry *handler_entry =
+        harp_registry_find(runtime, &runtime->registry, actor_desc->parent_handler);
+    if(handler_entry == NULL)
+        return HARP_RESULT_NAME_NOT_FOUND;
+    if(handler_entry->type != HARP_REGISTRY_ENTRY_TYPE_HANDLER)
+        return HARP_RESULT_NAME_TYPE_MISMATCH;
+
+    HarpHandlerRuntimeDesc *handler_rdesc = handler_entry->p_desc;
+    HarpHandlerBase *handler_base = handler_entry->p_inst;
+    if(handler_rdesc == NULL || handler_base == NULL)
+        return HARP_RESULT_CRITICAL_FAIL;
+
+    HarpHandlerDesc *handler_desc = &handler_rdesc->_base;
+
+    // check states
+    if(handler_rdesc->state != HARP_RUNTIME_STATE_INITIALIZED)
+        return HARP_RESULT_INVALID_STATE;
+
+    // check dependencies (code repeated, could be placed into a function)
+    for(uint64_t i = 0; i < handler_desc->dependency_count; ++i) {
+        HarpDependencyDesc *ddep = &handler_desc->p_dependencies[i];
+        HarpRegistryEntry *dentry =
+            harp_registry_find(runtime, &runtime->registry, ddep->name);
+        if(dentry == NULL)
+            return HARP_RESULT_DEPENDENCY_NOT_FOUND;
+        if(dentry->type != HARP_REGISTRY_ENTRY_TYPE_HANDLER)
+            return HARP_RESULT_NAME_TYPE_MISMATCH; // should be something else
+        if(dentry->p_desc == NULL)
+            return HARP_RESULT_CRITICAL_FAIL;
+
+        HarpHandlerRuntimeDesc *drdesc = dentry->p_desc;
+
+        if(drdesc->_base.version < ddep->min_version)
+            return HARP_RESULT_DEPENDENCY_VERSION_MISMATCH;
+
+        if(ddep->max_version != 0 &&
+           drdesc->_base.version > ddep->max_version)
+            return HARP_RESULT_DEPENDENCY_VERSION_MISMATCH;
+
+        if(drdesc->state == HARP_RUNTIME_STATE_INITIALIZING)
+            return HARP_RESULT_DEPENDENCY_CYCLE; // I do not believe we want this to ever happen for an actor, so yeah, return.
+        if(drdesc->state != HARP_RUNTIME_STATE_INITIALIZED)
+            return HARP_RESULT_DEPENDENCY_UNINITIALIZED;
+    }
+
+    // Start initialization
+    HarpActorBase *actor_base = hmem_block_alloc_single(&actor_rdesc->inst_block);
+    if(actor_base == NULL) {
+        // grow and retry, if it fails again, we have a critical error.
+        // technically, the first actor of an actordesc will endup here, as we do not add a page at registry
+    }
+    memset(actor_base, 0, actor_desc->instance_size);
+    actor_base->name = actor_desc->name;
+    actor_base->p_handler = handler_base;
+
+    HarpResult res = actor_desc->pfn_create(runtime->core_api, actor_base, (HarpCreatorBase *)creator);
+
+    if(res == HARP_RESULT_OK) {
+        *out_actor = actor_base;
+        ++handler_rdesc->actor_count;
+    } else {
+        hmem_block_free_single(&actor_rdesc->inst_block, actor_base);
+    }
+    return res;
 }
 
 HarpResult actor_destroy(
@@ -637,5 +724,52 @@ HarpResult actor_destroy(
     const HarpName name,
     HarpActorBase *actor
 ) {
+    if(handler == NULL || name == NULL || actor == NULL)
+        return HARP_RESULT_INVALID_ARGUMENTS;
 
+    HarpRuntime *runtime = (HarpRuntime*)handler;
+
+    // find the actor
+    HarpRegistryEntry *actor_entry =
+        harp_registry_find(runtime, &runtime->registry, name);
+    if(actor_entry == NULL)
+        return HARP_RESULT_NAME_NOT_FOUND;
+    if(actor_entry->type != HARP_REGISTRY_ENTRY_TYPE_ACTOR)
+        return HARP_RESULT_NAME_TYPE_MISMATCH;
+
+    HarpActorRuntimeDesc *actor_rdesc = actor_entry->p_desc;
+    if(actor_rdesc == NULL)
+        return HARP_RESULT_CRITICAL_FAIL;
+    
+    HarpActorDesc *actor_desc = &actor_rdesc->_base;
+
+    // find the handler
+    HarpRegistryEntry *handler_entry =
+        harp_registry_find(runtime, &runtime->registry, actor_desc->parent_handler);
+    if(handler_entry == NULL)
+        return HARP_RESULT_NAME_NOT_FOUND;
+    if(handler_entry->type != HARP_REGISTRY_ENTRY_TYPE_HANDLER)
+        return HARP_RESULT_NAME_TYPE_MISMATCH;
+
+    HarpHandlerRuntimeDesc *handler_rdesc = handler_entry->p_desc;
+    HarpHandlerBase *handler_base = handler_entry->p_inst;
+    if(handler_rdesc == NULL || handler_base == NULL)
+        return HARP_RESULT_CRITICAL_FAIL;
+
+    // check states
+    if(handler_rdesc->state != HARP_RUNTIME_STATE_INITIALIZED)
+        return HARP_RESULT_INVALID_STATE;
+
+    // check dependencies (jk, we have none to check for actors, since nothing depends on actors)
+    // probably only a function in hmem that checks if an address is in a pool.
+
+    // start termination
+    HarpResult res = actor_desc->pfn_destroy(runtime->core_api, actor);
+
+    if(res == HARP_RESULT_OK) {
+        hmem_block_free_single(&actor_rdesc->inst_block, actor);
+        if(handler_rdesc->actor_count > 0)
+            --handler_rdesc->actor_count;
+    }
+    return res;
 }
