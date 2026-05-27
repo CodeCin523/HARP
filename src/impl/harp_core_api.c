@@ -760,8 +760,9 @@ HarpResult actor_destroy(
     if(handler_rdesc->state != HARP_RUNTIME_STATE_INITIALIZED)
         return HARP_RESULT_INVALID_STATE;
 
-    // check dependencies (jk, we have none to check for actors, since nothing depends on actors)
-    // probably only a function in hmem that checks if an address is in a pool.
+    // check actor
+    if(!hmem_book_contains(&actor_rdesc->inst_book, actor))
+        return HARP_RESULT_INVALID_ARGUMENTS; // I do not like this error.
 
     // start termination
     HarpResult res = actor_desc->pfn_destroy(runtime->core_api, actor);
