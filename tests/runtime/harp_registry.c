@@ -1,116 +1,301 @@
 #include <assert.h>
-#include <stdlib.h>
+#include <stdint.h>
 #include <stdio.h>
+
 #include <runtime/harp_registry.h>
 
-static void setup_registry(HarpRegistry *r) {
-    for (uint32_t i = 0; i < HARP_REGISTRY_BUCKET_COUNT; i++) {
-        r->buckets[i].capacity = 8;
-        r->buckets[i].count = 0;
-        r->buckets[i].entries =
-            calloc(8, sizeof(HarpRegistryEntry));
-        assert(r->buckets[i].entries);
-    }
-}
 
-static void cleanup_registry(HarpRegistry *r) {
-    for (uint32_t i = 0; i < HARP_REGISTRY_BUCKET_COUNT; i++) {
-        free(r->buckets[i].entries);
-        r->buckets[i].entries = NULL;
-    }
-}
-
-
-
-static void test_insert_find() {
+static void test_name_store() {
     HarpRegistry r = {0};
-    setup_registry(&r);
+    assert(harp_setup_registry(&r) == HARP_RESULT_OK);
 
-    HarpRegistryEntry *a = harp_registry_insert(NULL, &r, "foo");
+    HarpName a = harp_registry_name(&r, "foo");
     assert(a != NULL);
 
-    HarpRegistryEntry *b = harp_registry_find(NULL, &r, "foo");
-    assert(b == a);
+    HarpName b = harp_registry_name(&r, "foo");
+    assert(b != NULL);
 
-    HarpRegistryEntry *c = harp_registry_find(NULL, &r, "bar");
-    assert(c == NULL);
+    // same interned string
+    assert(a == b);
 
-    printf("[OK] insert + find\n");
+    HarpName c = harp_registry_name(&r, "bar");
+    assert(c != NULL);
+    assert(c != a);
 
-    cleanup_registry(&r);
+    printf("[OK] name store\n");
+
+    harp_teardown_registry(&r);
 }
 
-static void test_duplicate_insert() {
+static void test_bind_get() {
     HarpRegistry r = {0};
-    setup_registry(&r);
+    assert(harp_setup_registry(&r) == HARP_RESULT_OK);
 
-    HarpRegistryEntry *a = harp_registry_insert(NULL, &r, "foo");
-    assert(a != NULL);
+    int value = 42;
 
-    HarpRegistryEntry *b = harp_registry_insert(NULL, &r, "foo");
-    assert(b == NULL); // duplicate rejected
+    HarpName name = harp_registry_name(&r, "foo");
+    assert(name != NULL);
 
-    printf("[OK] duplicate insert rejected\n");
+    assert(
+        harp_registry_bind(
+            &r,
+            name,
+            HARP_REGISTRY_ENTRY_TYPE_API,
+            &value
+        ) == HARP_RESULT_OK
+    );
 
-    cleanup_registry(&r);
+    void *ptr =
+        harp_registry_get(
+            &r,
+            "foo",
+            HARP_REGISTRY_ENTRY_TYPE_API
+        );
+
+    assert(ptr == &value);
+
+    printf("[OK] bind + get\n");
+
+    harp_teardown_registry(&r);
 }
 
-static void test_remove_existing() {
+static void test_bind_missing_name() {
     HarpRegistry r = {0};
-    setup_registry(&r);
+    assert(harp_setup_registry(&r) == HARP_RESULT_OK);
 
-    harp_registry_insert(NULL, &r, "foo");
+    int value = 42;
 
-    harp_registry_remove(NULL, &r, "foo");
+    assert(
+        harp_registry_bind(
+            &r,
+            "foo",
+            HARP_REGISTRY_ENTRY_TYPE_API,
+            &value
+        ) == HARP_RESULT_NAME_NOT_FOUND
+    );
 
-    HarpRegistryEntry *f = harp_registry_find(NULL, &r, "foo");
-    assert(f == NULL);
+    printf("[OK] bind missing name rejected\n");
 
-    printf("[OK] remove existing\n");
-
-    cleanup_registry(&r);
+    harp_teardown_registry(&r);
 }
 
-static void test_remove_missing() {
+static void test_duplicate_bind() {
     HarpRegistry r = {0};
-    setup_registry(&r);
+    assert(harp_setup_registry(&r) == HARP_RESULT_OK);
 
-    // should not crash
-    harp_registry_remove(NULL, &r, "does_not_exist");
+    int a = 1;
+    int b = 2;
 
-    printf("[OK] remove missing safe\n");
+    HarpName name = harp_registry_name(&r, "foo");
+    assert(name != NULL);
 
-    cleanup_registry(&r);
+    assert(
+        harp_registry_bind(
+            &r,
+            name,
+            HARP_REGISTRY_ENTRY_TYPE_API,
+            &a
+        ) == HARP_RESULT_OK
+    );
+
+    // second bind should fail
+    assert(
+        harp_registry_bind(
+            &r,
+            name,
+            HARP_REGISTRY_ENTRY_TYPE_HANDLER,
+            &b
+        ) == HARP_RESULT_NAME_TYPE_MISMATCH
+    );
+
+    printf("[OK] duplicate bind rejected\n");
+
+    harp_teardown_registry(&r);
 }
 
-static void test_multiple_entries() {
+static void test_unbind() {
     HarpRegistry r = {0};
-    setup_registry(&r);
+    assert(harp_setup_registry(&r) == HARP_RESULT_OK);
 
-    harp_registry_insert(NULL, &r, "a");
-    harp_registry_insert(NULL, &r, "b");
-    harp_registry_insert(NULL, &r, "c");
-    harp_registry_insert(NULL, &r, "d");
+    int value = 123;
 
-    assert(harp_registry_find(NULL, &r, "a"));
-    assert(harp_registry_find(NULL, &r, "b"));
-    assert(harp_registry_find(NULL, &r, "c"));
-    assert(harp_registry_find(NULL, &r, "d"));
+    HarpName name = harp_registry_name(&r, "foo");
+    assert(name != NULL);
 
-    assert(!harp_registry_find(NULL, &r, "z"));
+    assert(
+        harp_registry_bind(
+            &r,
+            name,
+            HARP_REGISTRY_ENTRY_TYPE_API,
+            &value
+        ) == HARP_RESULT_OK
+    );
 
-    printf("[OK] multiple inserts + finds\n");
+    assert(
+        harp_registry_unbind(
+            &r,
+            name,
+            HARP_REGISTRY_ENTRY_TYPE_API
+        ) == HARP_RESULT_OK
+    );
 
-    cleanup_registry(&r);
+    void *ptr =
+        harp_registry_get(
+            &r,
+            name,
+            HARP_REGISTRY_ENTRY_TYPE_API
+        );
+
+    assert(ptr == NULL);
+
+    printf("[OK] unbind\n");
+
+    harp_teardown_registry(&r);
 }
+
+static void test_wrong_type() {
+    HarpRegistry r = {0};
+    assert(harp_setup_registry(&r) == HARP_RESULT_OK);
+
+    int value = 999;
+
+    HarpName name = harp_registry_name(&r, "foo");
+    assert(name != NULL);
+
+    assert(
+        harp_registry_bind(
+            &r,
+            name,
+            HARP_REGISTRY_ENTRY_TYPE_API,
+            &value
+        ) == HARP_RESULT_OK
+    );
+
+    void *ptr =
+        harp_registry_get(
+            &r,
+            name,
+            HARP_REGISTRY_ENTRY_TYPE_HANDLER
+        );
+
+    assert(ptr == NULL);
+
+    printf("[OK] wrong type rejected\n");
+
+    harp_teardown_registry(&r);
+}
+
+static void test_many_entries() {
+    HarpRegistry r = {0};
+    assert(harp_setup_registry(&r) == HARP_RESULT_OK);
+
+    int a = 1;
+    int b = 2;
+    int c = 3;
+    int d = 4;
+
+    HarpName na = harp_registry_name(&r, "a");
+    HarpName nb = harp_registry_name(&r, "b");
+    HarpName nc = harp_registry_name(&r, "c");
+    HarpName nd = harp_registry_name(&r, "d");
+
+    assert(na != NULL);
+    assert(nb != NULL);
+    assert(nc != NULL);
+    assert(nd != NULL);
+
+    assert(
+        harp_registry_bind(
+            &r,
+            na,
+            HARP_REGISTRY_ENTRY_TYPE_API,
+            &a
+        ) == HARP_RESULT_OK
+    );
+
+    assert(
+        harp_registry_bind(
+            &r,
+            nb,
+            HARP_REGISTRY_ENTRY_TYPE_HANDLER,
+            &b
+        ) == HARP_RESULT_OK
+    );
+
+    assert(
+        harp_registry_bind(
+            &r,
+            nc,
+            HARP_REGISTRY_ENTRY_TYPE_ACTOR,
+            &c
+        ) == HARP_RESULT_OK
+    );
+
+    assert(
+        harp_registry_bind(
+            &r,
+            nd,
+            HARP_REGISTRY_ENTRY_TYPE_API,
+            &d
+        ) == HARP_RESULT_OK
+    );
+
+    assert(
+        harp_registry_get(
+            &r,
+            "a",
+            HARP_REGISTRY_ENTRY_TYPE_API
+        ) == &a
+    );
+
+    assert(
+        harp_registry_get(
+            &r,
+            "b",
+            HARP_REGISTRY_ENTRY_TYPE_HANDLER
+        ) == &b
+    );
+
+    assert(
+        harp_registry_get(
+            &r,
+            "c",
+            HARP_REGISTRY_ENTRY_TYPE_ACTOR
+        ) == &c
+    );
+
+    assert(
+        harp_registry_get(
+            &r,
+            "d",
+            HARP_REGISTRY_ENTRY_TYPE_API
+        ) == &d
+    );
+
+    assert(
+        harp_registry_get(
+            &r,
+            "z",
+            HARP_REGISTRY_ENTRY_TYPE_API
+        ) == NULL
+    );
+
+    printf("[OK] many entries\n");
+
+    harp_teardown_registry(&r);
+}
+
 
 int main() {
-    test_insert_find();
-    test_duplicate_insert();
-    test_remove_existing();
-    test_remove_missing();
-    test_multiple_entries();
+    test_name_store();
+    test_bind_get();
+    test_bind_missing_name();
+    test_duplicate_bind();
+    test_unbind();
+    test_wrong_type();
+    test_many_entries();
 
     printf("\nALL TESTS PASSED\n");
+
     return 0;
 }

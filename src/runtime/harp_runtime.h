@@ -28,6 +28,7 @@ struct HarpPackageRuntimeDesc {
 };
 struct HarpHandlerRuntimeDesc {
     HarpHandlerDesc _base;
+    HarpHandlerBase *instance;
 
     uint32_t dependent_count;
     uint32_t actor_count;
@@ -41,6 +42,7 @@ struct HarpActorRuntimeDesc {
 };
 struct HarpApiRuntimeDesc {
     HarpApiDesc _base;
+    HarpApiBase *instance;
 };
 
 struct HarpRuntime {

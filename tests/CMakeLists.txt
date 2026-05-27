@@ -3,7 +3,7 @@ set(SRC_DIR ${PROJECT_SOURCE_DIR}/src)
 add_executable(test_harp_registry
     runtime/harp_registry.c
 )
-target_link_libraries(test_harp_registry PRIVATE Harp)
+target_link_libraries(test_harp_registry PRIVATE Harp hmem::hmem)
 target_include_directories(test_harp_registry PRIVATE
     ${SRC_DIR}
 )

@@ -10,19 +10,8 @@ HarpResult harp_setup_runtime(HarpRuntime *runtime) {
     if (runtime == NULL)
         return HARP_RESULT_INVALID_ARGUMENTS;
 
-    // Track progress for rollback
-    int bucket_i = 0;
-
-    for (; bucket_i < HARP_REGISTRY_BUCKET_COUNT; ++bucket_i) {
-        runtime->registry.buckets[bucket_i].entries =
-            malloc(sizeof(HarpRegistryEntry) * 8);
-
-        if (!runtime->registry.buckets[bucket_i].entries)
-            goto fail_registry;
-
-        runtime->registry.buckets[bucket_i].capacity = 8;
-        runtime->registry.buckets[bucket_i].count = 0;
-    }
+    // registry
+    harp_setup_registry(&runtime->registry);
 
     // Descriptor setup
     runtime->page_size =
@@ -59,11 +48,9 @@ fail_pages:
 fail_book:
     hmem_teardown_book(&runtime->global_book);
 
-// rollback registry buckets
 fail_registry:
-    for (int i = 0; i < bucket_i; ++i) {
-        free(runtime->registry.buckets[i].entries);
-    }
+    // the registry clear itself correctly
+    // harp_teardown_registry(&runtime->registry);
 
     return HARP_RESULT_FAILED;
 }
@@ -80,9 +67,7 @@ void harp_teardown_runtime(HarpRuntime *runtime) {
 
     hmem_teardown_book(&runtime->global_book);
 
-    for (int i = 0; i < HARP_REGISTRY_BUCKET_COUNT; ++i) {
-        free(runtime->registry.buckets[i].entries);
-    }
+    harp_teardown_registry(&runtime->registry);
 }
 
 void *harp_runtime_global_alloc(HarpRuntime *runtime, size_t size, size_t alignment) {
