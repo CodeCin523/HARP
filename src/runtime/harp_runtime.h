@@ -1,7 +1,7 @@
 #ifndef RUNTIME_HARP_RUNTIME_H
 #define RUNTIME_HARP_RUNTIME_H
 
-#include <harp/harp_core.h>
+#include <harp/harp.h>
 #include "harp_registry.h"
 
 #include <hmem/hmem_arena.h>
@@ -39,6 +39,8 @@ struct HarpActorRuntimeDesc {
     HarpActorDesc _base;
     hmem_book_t inst_book;
     hmem_block_t inst_block;
+    
+    uint32_t growth_index;
 };
 struct HarpApiRuntimeDesc {
     HarpApiDesc _base;
@@ -62,7 +64,9 @@ struct HarpRuntime {
 HarpResult harp_setup_runtime(HarpRuntime *runtime);
 void harp_teardown_runtime(HarpRuntime *runtime);
 
-void *harp_runtime_global_alloc(HarpRuntime *runtime, size_t size, size_t alignment);
+void *harp_alloc_global(HarpRuntime *runtime, size_t size, size_t alignment);
+
+HarpActorBase *harp_alloc_actor(HarpRuntime *runtime, HarpActorRuntimeDesc *rdesc);
 
 
 #endif /* RUNTIME_HARP_RUNTIME_H */

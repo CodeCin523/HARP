@@ -63,6 +63,9 @@ HarpResult harp_initialize(
     core_api->handler_initialize = handler_initialize;
     core_api->handler_terminate = handler_terminate;
 
+    core_api->actor_create = actor_create;
+    core_api->actor_destroy = actor_destroy;
+
     runtime->core_api = core_api;
     core_api_base->available = 1;
 
@@ -99,14 +102,14 @@ HarpResult harp_runtime_get_api(
     const HarpName name,
     HarpApiBase **out_api
 ) {
-    
+    return get_api((HarpHandlerBase *) runtime, name, out_api);
 }
 HarpResult harp_runtime_get_handler(
     HarpRuntime *runtime,
     const HarpName name,
     HarpHandlerBase **out_handler
 ) {
-
+    return get_handler((HarpHandlerBase *) runtime, name, out_handler);
 }
 
 /* HarpResult harp_runtime_get_package_count(

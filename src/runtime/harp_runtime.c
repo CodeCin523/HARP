@@ -70,13 +70,12 @@ void harp_teardown_runtime(HarpRuntime *runtime) {
     harp_teardown_registry(&runtime->registry);
 }
 
-void *harp_runtime_global_alloc(HarpRuntime *runtime, size_t size, size_t alignment) {
+void *harp_alloc_global(HarpRuntime *runtime, size_t size, size_t alignment) {
     if(runtime == NULL || size == 0 || alignment == 0)
         return NULL;
 
     // First attempt
-    void *ptr = hmem_arena_alloc(
-        &runtime->global_arena, size, alignment);
+    void *ptr = hmem_arena_alloc(&runtime->global_arena, size, alignment);
     if(ptr != NULL)
         return ptr;
 
@@ -98,4 +97,36 @@ void *harp_runtime_global_alloc(HarpRuntime *runtime, size_t size, size_t alignm
     // Retry allocation after growth
     return hmem_arena_alloc(
         &runtime->global_arena, size, alignment);
+}
+
+HarpActorBase *harp_alloc_actor(HarpRuntime *runtime, HarpActorRuntimeDesc *rdesc) {
+    if(runtime == NULL || rdesc == NULL)
+        return NULL;
+
+    void *ptr = hmem_block_alloc_single(&rdesc->inst_block);
+    if(ptr != NULL)
+        return ptr;
+
+    size_t count = 4 << rdesc->growth_index;
+    size_t size = count * rdesc->_base.instance_size;
+
+    void *pool = malloc(size);
+
+    if(pool == NULL)
+        return NULL;
+
+    hmem_page_t page = {
+        .pool = pool,
+        .capacity = size
+    };
+
+    if(!hmem_book_push(&rdesc->inst_book, &page)) {
+        free(pool);
+        return NULL;
+    }
+
+    hmem_block_update(&rdesc->inst_block);
+
+    ++rdesc->growth_index;
+    return hmem_block_alloc_single(&rdesc->inst_block);
 }

@@ -3,6 +3,7 @@
 
 #include <hmem/hmem_block.h>
 #include <hmem/hmem_os.h>
+#include <hmem/utils/hmem_align.h>
 
 #include <string.h>
 #include <stdalign.h>
@@ -34,7 +35,7 @@ HarpResult register_api(
 
     // Allocate runtime descriptor
     HarpApiRuntimeDesc *rdesc =
-        harp_runtime_global_alloc(
+        harp_alloc_global(
             runtime,
             sizeof(HarpApiRuntimeDesc),
             alignof(HarpApiRuntimeDesc)
@@ -47,7 +48,7 @@ HarpResult register_api(
 
     // Allocate API instance
     HarpApiBase *rinst =
-        harp_runtime_global_alloc(
+        harp_alloc_global(
             runtime,
             desc->instance_size,
             desc->instance_alignment
@@ -103,7 +104,7 @@ HarpResult register_handler(
 
     // Allocate runtime descriptor
     HarpHandlerRuntimeDesc *rdesc =
-        harp_runtime_global_alloc(
+        harp_alloc_global(
             runtime,
             sizeof(HarpHandlerRuntimeDesc),
             alignof(HarpHandlerRuntimeDesc)
@@ -116,7 +117,7 @@ HarpResult register_handler(
 
     // Allocate handler instance
     HarpHandlerBase *rinst =
-        harp_runtime_global_alloc(
+        harp_alloc_global(
             runtime,
             desc->instance_size,
             desc->instance_alignment
@@ -145,7 +146,7 @@ HarpResult register_handler(
             sizeof(HarpDependencyDesc) * desc->dependency_count;
 
         HarpDependencyDesc *rdeps =
-            harp_runtime_global_alloc(
+            harp_alloc_global(
                 runtime,
                 deps_size,
                 alignof(HarpDependencyDesc)
@@ -214,7 +215,7 @@ HarpResult register_actor(
 
     // Allocate actor runtime descriptor
     HarpActorRuntimeDesc *rdesc =
-        harp_runtime_global_alloc(
+        harp_alloc_global(
             runtime,
             sizeof(HarpActorRuntimeDesc),
             alignof(HarpActorRuntimeDesc)
@@ -236,6 +237,7 @@ HarpResult register_actor(
         return HARP_RESULT_OUT_OF_MEMORY;
 
     rdesc->_base.name = rname;
+    rdesc->growth_index = 0;
 
     // Store parent handler name in registry memory
     if(desc->parent_handler != NULL) {
@@ -722,11 +724,8 @@ HarpResult actor_create(
     }
 
     // allocate actor instance
-    HarpActorBase *actor_base =
-        hmem_block_alloc_single(&actor_rdesc->inst_block);
-
+    HarpActorBase *actor_base = harp_alloc_actor(runtime, actor_rdesc);
     if(actor_base == NULL) {
-        // grow allocator here later
         return HARP_RESULT_OUT_OF_MEMORY;
     }
 

@@ -44,7 +44,7 @@ static void test_global_alloc_single() {
     );
 
     void *ptr =
-        harp_runtime_global_alloc(
+        harp_alloc_global(
             &runtime,
             64,
             alignof(max_align_t)
@@ -67,21 +67,21 @@ static void test_global_alloc_multiple() {
     );
 
     void *a =
-        harp_runtime_global_alloc(
+        harp_alloc_global(
             &runtime,
             32,
             8
         );
 
     void *b =
-        harp_runtime_global_alloc(
+        harp_alloc_global(
             &runtime,
             64,
             16
         );
 
     void *c =
-        harp_runtime_global_alloc(
+        harp_alloc_global(
             &runtime,
             128,
             32
@@ -110,14 +110,14 @@ static void test_global_alloc_alignment() {
     );
 
     void *ptr16 =
-        harp_runtime_global_alloc(
+        harp_alloc_global(
             &runtime,
             64,
             16
         );
 
     void *ptr32 =
-        harp_runtime_global_alloc(
+        harp_alloc_global(
             &runtime,
             64,
             32
@@ -157,7 +157,7 @@ static void test_global_alloc_growth() {
 
     for(int i = 0; i < 16; ++i) {
         void *ptr =
-            harp_runtime_global_alloc(
+            harp_alloc_global(
                 &runtime,
                 alloc_size,
                 alignof(max_align_t)
@@ -186,7 +186,7 @@ static void test_invalid_arguments() {
 
     // alloc
     assert(
-        harp_runtime_global_alloc(
+        harp_alloc_global(
             NULL,
             64,
             8
@@ -201,7 +201,7 @@ static void test_invalid_arguments() {
     );
 
     assert(
-        harp_runtime_global_alloc(
+        harp_alloc_global(
             &runtime,
             0,
             8
@@ -209,7 +209,7 @@ static void test_invalid_arguments() {
     );
 
     assert(
-        harp_runtime_global_alloc(
+        harp_alloc_global(
             &runtime,
             64,
             0
