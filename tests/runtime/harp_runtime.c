@@ -6,11 +6,19 @@
 #include <runtime/harp_runtime.h>
 
 
+static const HarpRuntimeCreator runtime_creator = {
+    .argv0 = "./test_harp_runtime"
+};
+
+
 static void test_setup_teardown() {
     HarpRuntime runtime = {0};
 
     HarpResult result =
-        harp_setup_runtime(&runtime);
+        harp_setup_runtime(
+            &runtime,
+            &runtime_creator
+        );
 
     assert(result == HARP_RESULT_OK);
 
@@ -27,7 +35,17 @@ static void test_setup_teardown() {
 
     assert(runtime.page_size >= 16384);
 
+    // Paths initialized
+    assert(runtime.executable_directory != NULL);
+    assert(runtime.working_directory != NULL);
+
     printf("[OK] runtime setup\n");
+
+    printf("Executable Directory: %s\n",
+           runtime.executable_directory);
+
+    printf("Working Directory: %s\n",
+           runtime.working_directory);
 
     harp_teardown_runtime(&runtime);
 
@@ -39,8 +57,10 @@ static void test_global_alloc_single() {
     HarpRuntime runtime = {0};
 
     assert(
-        harp_setup_runtime(&runtime) ==
-        HARP_RESULT_OK
+        harp_setup_runtime(
+            &runtime,
+            &runtime_creator
+        ) == HARP_RESULT_OK
     );
 
     void *ptr =
@@ -62,8 +82,10 @@ static void test_global_alloc_multiple() {
     HarpRuntime runtime = {0};
 
     assert(
-        harp_setup_runtime(&runtime) ==
-        HARP_RESULT_OK
+        harp_setup_runtime(
+            &runtime,
+            &runtime_creator
+        ) == HARP_RESULT_OK
     );
 
     void *a =
@@ -105,8 +127,10 @@ static void test_global_alloc_alignment() {
     HarpRuntime runtime = {0};
 
     assert(
-        harp_setup_runtime(&runtime) ==
-        HARP_RESULT_OK
+        harp_setup_runtime(
+            &runtime,
+            &runtime_creator
+        ) == HARP_RESULT_OK
     );
 
     void *ptr16 =
@@ -144,8 +168,10 @@ static void test_global_alloc_growth() {
     HarpRuntime runtime = {0};
 
     assert(
-        harp_setup_runtime(&runtime) ==
-        HARP_RESULT_OK
+        harp_setup_runtime(
+            &runtime,
+            &runtime_creator
+        ) == HARP_RESULT_OK
     );
 
     uint8_t initial_pages =
@@ -180,8 +206,17 @@ static void test_global_alloc_growth() {
 static void test_invalid_arguments() {
     // setup_runtime
     assert(
-        harp_setup_runtime(NULL) ==
-        HARP_RESULT_INVALID_ARGUMENTS
+        harp_setup_runtime(
+            NULL,
+            &runtime_creator
+        ) == HARP_RESULT_INVALID_ARGUMENTS
+    );
+
+    assert(
+        harp_setup_runtime(
+            &(HarpRuntime){0},
+            NULL
+        ) == HARP_RESULT_INVALID_ARGUMENTS
     );
 
     // alloc
@@ -196,8 +231,10 @@ static void test_invalid_arguments() {
     HarpRuntime runtime = {0};
 
     assert(
-        harp_setup_runtime(&runtime) ==
-        HARP_RESULT_OK
+        harp_setup_runtime(
+            &runtime,
+            &runtime_creator
+        ) == HARP_RESULT_OK
     );
 
     assert(

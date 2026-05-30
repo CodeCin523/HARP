@@ -85,7 +85,7 @@ static HarpResult test_actor_destroy(
 /*  MAIN                                                                            */
 /* ================================================================================ */
 
-int main() {
+int main(int argc, char **argv) {
     printf("=== HARP CORE TEST ===\n");
 
     /* ------------------------------------------------------------------------ */
@@ -93,9 +93,12 @@ int main() {
     /* ------------------------------------------------------------------------ */
 
     HarpRuntime *runtime = NULL;
+    HarpRuntimeCreator creator = {
+        .argv0 = argv[0]
+    };
 
     assert(
-        harp_initialize(&runtime) == HARP_RESULT_OK
+        harp_initialize((HarpCreatorBase *)&creator, &runtime) == HARP_RESULT_OK
     );
 
     assert(runtime != NULL);

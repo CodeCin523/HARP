@@ -26,4 +26,10 @@ add_executable(test_harp_core_generic
 )
 target_link_libraries(test_harp_core_generic PRIVATE Harp)
 
+add_executable(test_harp_core_paths
+    harp_core_paths.c
+)
+target_link_libraries(test_harp_core_paths PRIVATE Harp)
+
 add_test(NAME test_harp_core_generic COMMAND test_harp_core_generic)
+add_test(NAME test_harp_core_paths COMMAND test_harp_core_paths)

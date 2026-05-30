@@ -21,4 +21,9 @@ HarpResult actor_create(HarpHandlerBase *handler, const HarpName name, const Har
 HarpResult actor_destroy(HarpHandlerBase *handler, const HarpName name, HarpActorBase* actor);
 
 
+HarpResult get_executable_directory(HarpHandlerBase *handler, const char **out_path);
+HarpResult get_working_directory(HarpHandlerBase *handler, const char **out_path);
+HarpResult get_package_directory(HarpHandlerBase *handler, const HarpName name, const char **out_path);
+
+
 #endif /* IMPL_HARP_API_H */

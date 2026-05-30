@@ -18,19 +18,21 @@
 
 
 HarpResult harp_initialize(
+    const HarpCreatorBase *creator,
     HarpRuntime **out_runtime
 ) {
     if(out_runtime == NULL)
         return HARP_RESULT_MISSING_OUTPUT;
 
     *out_runtime = NULL;
+    HarpRuntimeCreator *runtime_creator = (HarpRuntimeCreator *)creator; 
 
     HarpRuntime *runtime = malloc(sizeof(HarpRuntime));
 
     if(runtime == NULL)
         return HARP_RESULT_FAILED;
 
-    if(harp_setup_runtime(runtime) != HARP_RESULT_OK)
+    if(harp_setup_runtime(runtime, runtime_creator) != HARP_RESULT_OK)
         goto fail_runtime;
 
     // Register core API
@@ -65,6 +67,10 @@ HarpResult harp_initialize(
 
     core_api->actor_create = actor_create;
     core_api->actor_destroy = actor_destroy;
+
+    core_api->get_executable_directory = get_executable_directory;
+    core_api->get_working_directory = get_working_directory;
+    core_api->get_package_directory = get_package_directory;
 
     runtime->core_api = core_api;
     core_api_base->available = 1;

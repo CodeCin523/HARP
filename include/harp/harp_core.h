@@ -8,11 +8,21 @@ extern "C" {
 #include "harp.h"
 
 
+typedef struct HarpRuntimeCreator HarpRuntimeCreator;
+
+struct HarpRuntimeCreator {
+    HarpCreatorBase _base;
+
+    const char *argv0;
+};
+
+
 /* ================================================================================ */
 /*  INTERFACE                                                                       */
 /* ================================================================================ */
 
 HarpResult harp_initialize(
+    const HarpCreatorBase *creator,
     HarpRuntime **out_runtime
 );
 HarpResult harp_terminate(

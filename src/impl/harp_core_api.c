@@ -816,3 +816,82 @@ HarpResult actor_destroy(
 
     return res;
 }
+
+
+/* ================================================================================ */
+/*  DIRECTORY PATH                                                                  */
+/* ================================================================================ */
+
+HarpResult get_executable_directory(
+    HarpHandlerBase *handler,
+    const char **out_path
+) {
+    if(handler == NULL)
+        return HARP_RESULT_INVALID_ARGUMENTS;
+
+    if(out_path == NULL)
+        return HARP_RESULT_MISSING_OUTPUT;
+
+    *out_path = NULL;
+
+    HarpRuntime *runtime = (HarpRuntime *)handler;
+
+    if(runtime->executable_directory == NULL)
+        return HARP_RESULT_CRITICAL_FAIL;
+
+    *out_path = runtime->executable_directory;
+    return HARP_RESULT_OK;
+}
+
+HarpResult get_working_directory(
+    HarpHandlerBase *handler,
+    const char **out_path
+) {
+    if(handler == NULL)
+        return HARP_RESULT_INVALID_ARGUMENTS;
+
+    if(out_path == NULL)
+        return HARP_RESULT_MISSING_OUTPUT;
+
+    *out_path = NULL;
+
+    HarpRuntime *runtime = (HarpRuntime *)handler;
+
+    if(runtime->working_directory == NULL)
+        return HARP_RESULT_CRITICAL_FAIL;
+
+    *out_path = runtime->working_directory;
+    return HARP_RESULT_OK;
+}
+
+HarpResult get_package_directory(
+    HarpHandlerBase *handler,
+    const HarpName name,
+    const char **out_path
+) {
+    if(handler == NULL || name == NULL)
+        return HARP_RESULT_INVALID_ARGUMENTS;
+
+    if(out_path == NULL)
+        return HARP_RESULT_MISSING_OUTPUT;
+
+    *out_path = NULL;
+
+    HarpRuntime *runtime = (HarpRuntime *)handler;
+
+    HarpPackageRuntimeDesc *rdesc =
+        harp_registry_get(
+            &runtime->registry,
+            name,
+            HARP_REGISTRY_ENTRY_TYPE_PACKAGE
+        );
+
+    if(rdesc == NULL)
+        return HARP_RESULT_NAME_NOT_FOUND;
+
+    if(rdesc->directory == NULL)
+        return HARP_RESULT_CRITICAL_FAIL;
+
+    *out_path = rdesc->directory;
+    return HARP_RESULT_OK;
+}

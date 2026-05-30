@@ -175,6 +175,11 @@ struct HarpCoreApi {
 
     HarpResult (*actor_create)(HarpHandlerBase *handler, const HarpName name, const HarpCreatorBase* creator, HarpActorBase** out_actor);
     HarpResult (*actor_destroy)(HarpHandlerBase *handler, const HarpName name, HarpActorBase* actor);
+
+    /* Paths */
+    HarpResult (*get_executable_directory)(HarpHandlerBase *handler, const char **out_path);
+    HarpResult (*get_working_directory)(HarpHandlerBase *handler, const char **out_path);
+    HarpResult (*get_package_directory)(HarpHandlerBase *handler, const HarpName name, const char **out_path);
 };
 
 #define HARP_EXTENDED_API_NAME "HarpExtendedApi"

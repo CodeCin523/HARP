@@ -25,6 +25,8 @@ enum HarpRuntimeState {
 
 struct HarpPackageRuntimeDesc {
     HarpPackageDesc _base;
+
+    char *directory;
 };
 struct HarpHandlerRuntimeDesc {
     HarpHandlerDesc _base;
@@ -54,6 +56,9 @@ struct HarpRuntime {
 
     HarpCoreApi *core_api;
 
+    char *executable_directory;
+    char *working_directory;
+
     hmem_book_t global_book;
     hmem_arena_t global_arena;
 
@@ -61,7 +66,7 @@ struct HarpRuntime {
 };
 
 
-HarpResult harp_setup_runtime(HarpRuntime *runtime);
+HarpResult harp_setup_runtime(HarpRuntime *runtime, HarpRuntimeCreator *creator);
 void harp_teardown_runtime(HarpRuntime *runtime);
 
 void *harp_alloc_global(HarpRuntime *runtime, size_t size, size_t alignment);
