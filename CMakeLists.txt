@@ -13,9 +13,6 @@ option(HARP_BUILD_LIBRARY  "Build HARP shared library" ON)
 option(HARP_BUILD_TESTS    "Build HARP tests" OFF)
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
-set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
-set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 
 # ---- external package ----
 add_subdirectory(external)
