@@ -29,11 +29,6 @@ HarpResult harp_terminate(
     HarpRuntime *runtime
 );
 
-HarpResult harp_runtime_load_directory(
-    HarpRuntime *runtime,
-    const char *path
-);
-
 HarpResult harp_runtime_get_api(
     HarpRuntime *runtime,
     const HarpName name,
@@ -43,6 +38,14 @@ HarpResult harp_runtime_get_handler(
     HarpRuntime *runtime,
     const HarpName name,
     HarpHandlerBase **out_handler
+);
+
+HarpResult harp_runtime_load_packages(
+    HarpRuntime *runtime
+);
+HarpResult harp_runtime_load_packages_from(
+    HarpRuntime *runtime,
+    const char *path
 );
 
 // HarpResult harp_runtime_get_package_count(

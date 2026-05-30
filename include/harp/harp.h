@@ -82,8 +82,6 @@ struct HarpPackageDesc {
     HarpVersion version;
 
     HarpResult (*pfn_register)(HarpApiBase *);
-    HarpResult (*pfn_init)(HarpApiBase *);
-    HarpResult (*pfn_term)(HarpApiBase *);
 
     HarpDependencyDesc* p_dependencies;
     uint64_t dependency_count;
