@@ -148,7 +148,7 @@ int main(int argc, char **argv) {
 
     assert(
         core_api->register_handler(
-            (HarpHandlerBase*)runtime,
+            core_api,
             &handler_desc
         ) == HARP_RESULT_OK
     );
@@ -164,7 +164,7 @@ int main(int argc, char **argv) {
 
     assert(
         core_api->get_handler(
-            (HarpHandlerBase*)runtime,
+            core_api,
             "test_handler",
             &handler_base
         ) == HARP_RESULT_OK
@@ -185,7 +185,7 @@ int main(int argc, char **argv) {
 
     assert(
         core_api->get_handler_desc(
-            (HarpHandlerBase*)runtime,
+            core_api,
             "test_handler",
             &handler_desc_out
         ) == HARP_RESULT_OK
@@ -205,7 +205,7 @@ int main(int argc, char **argv) {
 
     assert(
         core_api->handler_initialize(
-            (HarpHandlerBase*)runtime,
+            core_api,
             "test_handler",
             &handler_creator
         ) == HARP_RESULT_OK
@@ -235,7 +235,7 @@ int main(int argc, char **argv) {
 
     assert(
         core_api->register_actor(
-            (HarpHandlerBase*)runtime,
+            core_api,
             &actor_desc
         ) == HARP_RESULT_OK
     );
@@ -251,7 +251,7 @@ int main(int argc, char **argv) {
 
     assert(
         core_api->get_actor_desc(
-            (HarpHandlerBase*)runtime,
+            core_api,
             "test_actor",
             &actor_desc_out
         ) == HARP_RESULT_OK
@@ -273,7 +273,7 @@ int main(int argc, char **argv) {
 
     assert(
         core_api->actor_create(
-            (HarpHandlerBase*)runtime,
+            core_api,
             "test_actor",
             &actor_creator,
             &actor_base
@@ -295,7 +295,7 @@ int main(int argc, char **argv) {
 
     assert(
         core_api->actor_destroy(
-            (HarpHandlerBase*)runtime,
+            core_api,
             "test_actor",
             actor_base
         ) == HARP_RESULT_OK
@@ -310,7 +310,7 @@ int main(int argc, char **argv) {
 
     assert(
         core_api->handler_terminate(
-            (HarpHandlerBase*)runtime,
+            core_api,
             "test_handler"
         ) == HARP_RESULT_OK
     );

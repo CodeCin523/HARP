@@ -87,42 +87,43 @@ HarpResult harp_initialize(
     };
     HarpApiBase *core_api_base = NULL;
 
-    if(register_api(
-            (HarpHandlerBase *)runtime,
-            &core_api_desc,
-            &core_api_base
-        ) != HARP_RESULT_OK)
+    if(runtime_register_api(
+        runtime,
+        &core_api_desc,
+        &core_api_base
+    ) != HARP_RESULT_OK)
         goto fail_setup;
 
-    core_api_base->p_handler = (HarpHandlerBase *)runtime;
     HarpCoreApi *core_api = (HarpCoreApi *)core_api_base;
+    core_api->p_core = (HarpHandlerBase *)runtime;
 
     /* registration */
-    core_api->register_api = register_api;
-    core_api->register_handler = register_handler;
-    core_api->register_actor = register_actor;
+    core_api->register_api = core_register_api;
+    core_api->register_handler = core_register_handler;
+    core_api->register_actor = core_register_actor;
 
     /* retrieval */
-    core_api->get_api = get_api;
-    core_api->get_handler = get_handler;
+    core_api->get_api = core_get_api;
+    core_api->get_handler = core_get_handler;
 
-    core_api->get_api_desc = get_api_desc;
-    core_api->get_handler_desc = get_handler_desc;
-    core_api->get_actor_desc = get_actor_desc;
+    core_api->get_api_desc = core_get_api_desc;
+    core_api->get_handler_desc = core_get_handler_desc;
+    core_api->get_actor_desc = core_get_actor_desc;
 
     /* lifecycle */
-    core_api->handler_initialize = handler_initialize;
-    core_api->handler_terminate = handler_terminate;
-    core_api->actor_create = actor_create;
-    core_api->actor_destroy = actor_destroy;
+    core_api->handler_initialize = core_handler_initialize;
+    core_api->handler_terminate = core_handler_terminate;
+    core_api->actor_create = core_actor_create;
+    core_api->actor_destroy = core_actor_destroy;
 
     /* paths */
-    core_api->get_executable_directory = get_executable_directory;
-    core_api->get_working_directory = get_working_directory;
-    core_api->get_package_directory = get_package_directory;
+    core_api->get_executable_directory = core_get_executable_directory;
+    core_api->get_working_directory = core_get_working_directory;
+    core_api->get_package_directory = core_get_package_directory;
+
+    core_api_base->available = 1;
 
     runtime->core_api = core_api;
-    core_api_base->available = 1;
 
     *out_runtime = runtime;
 
@@ -160,8 +161,8 @@ HarpResult harp_runtime_get_api(
     const HarpName name,
     HarpApiBase **out_api
 ) {
-    return get_api(
-        (HarpHandlerBase *)runtime,
+    return runtime_get_api(
+        runtime,
         name,
         out_api
     );
@@ -172,8 +173,8 @@ HarpResult harp_runtime_get_handler(
     const HarpName name,
     HarpHandlerBase **out_handler
 ) {
-    return get_handler(
-        (HarpHandlerBase *)runtime,
+    return runtime_get_handler(
+        runtime,
         name,
         out_handler
     );
@@ -262,7 +263,7 @@ static HarpResult harp_register_package_recursive(
 
     HarpResult res =
         pkg->desc->pfn_register(
-            (HarpApiBase *)runtime->core_api
+            runtime->core_api
         );
 
     if(res != HARP_RESULT_OK)

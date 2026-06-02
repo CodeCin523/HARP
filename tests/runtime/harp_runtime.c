@@ -6,7 +6,7 @@
 #include <runtime/harp_runtime.h>
 
 
-static const HarpRuntimeCreator runtime_creator = {
+static HarpRuntimeCreator runtime_creator = {
     .argv0 = "./test_harp_runtime"
 };
 

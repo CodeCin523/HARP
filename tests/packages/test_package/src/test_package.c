@@ -12,9 +12,11 @@ typedef struct TestHandler {
 
 
 static int test_add(
+    TestApi *api,
     int a,
     int b
 ) {
+    (void)api;
     return a + b;
 }
 
@@ -44,11 +46,8 @@ static HarpResult test_handler_term(
 
 
 static HarpResult test_package_register(
-    HarpApiBase *api_base
+    HarpCoreApi *core
 ) {
-    HarpCoreApi *core =
-        HARP_API_AS(HarpCoreApi, api_base);
-
     /* API */
 
     HarpApiDesc api_desc = {
@@ -63,7 +62,7 @@ static HarpResult test_package_register(
 
     HarpResult res =
         core->register_api(
-            api_base->p_handler,
+            core,
             &api_desc,
             &base
         );
@@ -90,7 +89,7 @@ static HarpResult test_package_register(
     };
 
     return core->register_handler(
-        api_base->p_handler,
+        core,
         &handler_desc
     );
 }

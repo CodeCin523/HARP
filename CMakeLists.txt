@@ -1,120 +1,186 @@
 cmake_minimum_required(VERSION 3.17)
 
+# ------------------------------------------------------------------------------
+# Project
+# ------------------------------------------------------------------------------
+
 project(
     HARP
-    VERSION 1.0.0
+    VERSION 1.0.1
     DESCRIPTION
         "HARP is a minimal runtime that orchestrates modular behavior through runtime-loaded packages."
     LANGUAGES C
 )
 
-option(HARP_BUILD_INTERFACE "Build HARP interface" ON)
-option(HARP_BUILD_LIBRARY  "Build HARP shared library" ON)
-option(HARP_BUILD_TESTS    "Build HARP tests" OFF)
-
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
-# ---- external package ----
+option(HARP_BUILD_TOOL  "Build HARP command line tool" ON)
+option(HARP_BUILD_TESTS "Build HARP tests" OFF)
+
+
+# ------------------------------------------------------------------------------
+# External Dependencies
+# ------------------------------------------------------------------------------
+
 add_subdirectory(external)
 
-# ---- package interface ----
-if(HARP_BUILD_INTERFACE)
-    add_library(Interface INTERFACE)
-    add_library(HARP::Interface ALIAS Interface)
 
-    target_include_directories(
-        Interface INTERFACE
-        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-        $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
-    )
+# ------------------------------------------------------------------------------
+# HarpInterface Library
+# ------------------------------------------------------------------------------
 
-    target_compile_features(
-        Interface INTERFACE c_std_23
-    )
-endif()
+add_library(HarpInterface INTERFACE)
+add_library(HARP::Interface ALIAS HarpInterface)
 
-# ---- harp library ----
-if(HARP_BUILD_LIBRARY)
-    add_library(Harp SHARED)
-    add_library(HARP::Harp ALIAS Harp)
+target_include_directories(
+    HarpInterface INTERFACE
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+    $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
+)
 
-    set_target_properties(
-        Harp PROPERTIES
-        VERSION ${PROJECT_VERSION}
-        SOVERSION ${PROJECT_VERSION_MAJOR}
-    )
+set_target_properties(
+    HarpInterface PROPERTIES
+    EXPORT_NAME Interface
+)
 
-    target_sources(
-        Harp PRIVATE
-        src/impl/harp_core_api.c
-        src/runtime/harp_registry.c
-        src/runtime/harp_runtime.c
-        src/harp_core.c
-    )
+target_compile_features(
+    HarpInterface INTERFACE
+    c_std_23
+)
 
-    target_compile_features(
-        Harp PUBLIC c_std_23
-    )
 
-    target_link_libraries(
-        Harp PRIVATE hmem::hmem
-    )
+# ------------------------------------------------------------------------------
+# Shared Library
+# ------------------------------------------------------------------------------
 
-    target_include_directories(
-        Harp
-        PRIVATE src
-        PUBLIC
-            $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-            $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
-    )
-endif()
+add_library(Harp SHARED)
+add_library(HARP::Harp ALIAS Harp)
 
-# ---- harp tests ----
+set_target_properties(
+    Harp PROPERTIES
+    VERSION ${PROJECT_VERSION}
+    SOVERSION ${PROJECT_VERSION_MAJOR}
+)
+
+target_sources(
+    Harp PRIVATE
+    src/impl/harp_core_api.c
+    src/runtime/harp_registry.c
+    src/runtime/harp_runtime.c
+    src/harp_core.c
+)
+
+target_include_directories(
+    Harp PRIVATE
+    src
+)
+
+target_link_libraries(
+    Harp
+    PUBLIC
+        HarpInterface
+    PRIVATE
+        hmem::hmem
+)
+
+target_compile_features(
+    Harp PUBLIC
+    c_std_23
+)
+
+
+# ------------------------------------------------------------------------------
+# Tests
+# ------------------------------------------------------------------------------
+
 if(HARP_BUILD_TESTS)
     add_subdirectory(tests)
 endif()
 
-# ---- install the library ----
+
+# ------------------------------------------------------------------------------
+# Command Line Tool
+# ------------------------------------------------------------------------------
+
+if(HARP_BUILD_TOOL)
+
+    add_executable(harp
+        tools/harp/main.c
+    )
+
+    target_link_libraries(
+        harp PRIVATE
+        HARP::Interface
+    )
+
+endif()
+
+
+# ------------------------------------------------------------------------------
+# Installation
+# ------------------------------------------------------------------------------
+
 include(GNUInstallDirs)
 
-if(HARP_BUILD_INTERFACE)
-    install(
-        TARGETS Interface
-        EXPORT HarpTargets
-        INCLUDES DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
-    )
-endif()
+install(
+    DIRECTORY include/
+    DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
+)
 
-if(HARP_BUILD_LIBRARY)
+install(
+    TARGETS
+        HarpInterface
+        Harp
+    EXPORT HarpTargets
+
+    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+    ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+
+    INCLUDES DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
+)
+
+if(HARP_BUILD_TOOL)
+
     install(
-        TARGETS Harp
-        EXPORT HarpTargets
-        LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
-        ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+        TARGETS harp
         RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
-        INCLUDES DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
     )
+
 endif()
 
-install(DIRECTORY include/ DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 
-# ---- cmake package ----
+# ------------------------------------------------------------------------------
+# CMake Package
+# ------------------------------------------------------------------------------
+
 include(CMakePackageConfigHelpers)
 
 write_basic_package_version_file(
-    "HarpConfigVersion.cmake"
+    "${CMAKE_CURRENT_BINARY_DIR}/HarpConfigVersion.cmake"
     VERSION ${PROJECT_VERSION}
-    COMPATIBILITY SameMajorVersion)
+    COMPATIBILITY SameMajorVersion
+)
 
 configure_package_config_file(
     "${CMAKE_CURRENT_LIST_DIR}/cmake/HarpConfig.cmake.in"
     "${CMAKE_CURRENT_BINARY_DIR}/HarpConfig.cmake"
-    INSTALL_DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/cmake/harp
+    INSTALL_DESTINATION
+        ${CMAKE_INSTALL_LIBDIR}/cmake/harp
 )
 
 install(
     EXPORT HarpTargets
     FILE HarpTargets.cmake
     NAMESPACE HARP::
-    DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/cmake/harp
+    DESTINATION
+        ${CMAKE_INSTALL_LIBDIR}/cmake/harp
+)
+
+install(
+    FILES
+        "${CMAKE_CURRENT_BINARY_DIR}/HarpConfig.cmake"
+        "${CMAKE_CURRENT_BINARY_DIR}/HarpConfigVersion.cmake"
+    DESTINATION
+        ${CMAKE_INSTALL_LIBDIR}/cmake/harp
 )

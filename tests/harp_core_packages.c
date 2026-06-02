@@ -65,7 +65,7 @@ int main(
 
     res =
         core->get_package_directory(
-            (HarpHandlerBase *)runtime,
+            core,
             "test_package",
             &package_dir
         );
@@ -96,7 +96,7 @@ int main(
         HARP_API_AS(TestApi, api_base);
 
     int value =
-        api->add(2, 3);
+        api->add(api, 2, 3);
 
     assert(value == 5);
 
@@ -124,7 +124,7 @@ int main(
 
     res =
         core->handler_initialize(
-            (HarpHandlerBase *)runtime,
+            core,
             "test_handler",
             &empty_creator
         );

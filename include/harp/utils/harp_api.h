@@ -19,21 +19,9 @@
 #define HARP_API_AS(type, api_ptr) \
     ((type*)(api_ptr))
 
-// Get owning handler from API
-#define HARP_API_HANDLER(api_ptr) \
-    (HARP_API_GET_BASE(api_ptr)->p_handler)
-
-// Cast owning handler to a specific handler type
-#define HARP_API_HANDLER_AS(type, api_ptr) \
-    ((type*)HARP_API_HANDLER(api_ptr))
-
 // Check if API pointer is valid and currently available
 #define HARP_API_AVAILABLE(api_ptr) \
     ((api_ptr) != NULL && HARP_API_GET_BASE(api_ptr)->available)
-
-// Check if API has a valid owning handler
-#define HARP_API_HAS_HANDLER(api_ptr) \
-    (HARP_API_HANDLER(api_ptr) != NULL)
 
 // Get full version from API
 #define HARP_API_VERSION(api_ptr) \
@@ -58,9 +46,8 @@
 #define HARP_API_REQUIRE(api_ptr) \
     ((api_ptr) != NULL && HARP_API_GET_BASE(api_ptr)->available)
 
-// Require API to have a valid handler
-#define HARP_API_REQUIRE_HANDLER(api_ptr) \
-    ((api_ptr) != NULL && HARP_API_HANDLER(api_ptr) != NULL)
+#define HARP_API_CALL(api_ptr, func, ...) \
+    ((api_ptr)->func(api_ptr, __VA_ARGS__))
 
 
 /* ================================================================================ */
@@ -72,11 +59,7 @@
 #undef HARP_API_GET_BASE
 #undef HARP_API_AS
 
-#undef HARP_API_HANDLER
-#undef HARP_API_HANDLER_AS
-
 #undef HARP_API_AVAILABLE
-#undef HARP_API_HAS_HANDLER
 
 #undef HARP_API_VERSION
 #undef HARP_API_MAJOR
@@ -86,6 +69,7 @@
 #undef HARP_API_WITH
 
 #undef HARP_API_REQUIRE
-#undef HARP_API_REQUIRE_HANDLER
+
+#undef HARP_API_CALL
 
 #endif /* HARP_UTILS_UNDEF */

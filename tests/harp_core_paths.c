@@ -53,7 +53,7 @@ int main(int argc, char **argv) {
 
     res =
         core_api->get_executable_directory(
-            (HarpHandlerBase *)runtime,
+            core_api,
             &exe_dir
         );
 
@@ -71,7 +71,7 @@ int main(int argc, char **argv) {
 
     res =
         core_api->get_working_directory(
-            (HarpHandlerBase *)runtime,
+            core_api,
             &work_dir
         );
 

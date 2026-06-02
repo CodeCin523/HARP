@@ -109,7 +109,7 @@ target_include_directories(
 
 target_link_libraries(
     TestPackageInterface INTERFACE
-    Interface
+    HarpInterface
 )
 
 # ==============================================================================
@@ -122,7 +122,7 @@ add_library(test_package SHARED
 
 target_link_libraries(
     test_package PRIVATE
-    Interface
+    HarpInterface
     TestPackageInterface
 )
 

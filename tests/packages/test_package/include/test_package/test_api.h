@@ -10,15 +10,18 @@ extern "C" {
 #define TEST_API_NAME "test_api"
 #define TEST_API_VERSION HARP_MAKE_VERSION(1, 0, 0)
 
-typedef struct TestApi {
+typedef struct TestApi TestApi;
+
+struct TestApi {
     HarpApiBase _base;
 
     int (*add)(
+        TestApi *api,
         int a,
         int b
     );
 
-} TestApi;
+};
 
 #ifdef __cplusplus
 }
