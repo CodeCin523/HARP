@@ -14,67 +14,67 @@
 /* ================================================================================ */
 
 HarpResult core_register_api(HarpCoreApi *api, const HarpApiDesc* desc, HarpApiBase** out_api) {
-    HarpRuntime *runtime = (HarpRuntime *)api->p_core;
+    HarpRuntime *runtime = ((HarpCoreApiImpl *)api)->p_runtime;
     return runtime_register_api(runtime, desc, out_api);
 }
 HarpResult core_register_handler(HarpCoreApi *api, const HarpHandlerDesc* desc) {
-    HarpRuntime *runtime = (HarpRuntime *)api->p_core;
+    HarpRuntime *runtime = ((HarpCoreApiImpl *)api)->p_runtime;
     return runtime_register_handler(runtime, desc);
 }
 HarpResult core_register_actor(HarpCoreApi *api, const HarpActorDesc* desc) {
-    HarpRuntime *runtime = (HarpRuntime *)api->p_core;
+    HarpRuntime *runtime = ((HarpCoreApiImpl *)api)->p_runtime;
     return runtime_register_actor(runtime, desc);
 }
 
 HarpResult core_get_api(HarpCoreApi *api, const HarpName name, HarpApiBase **out_api) {
-    HarpRuntime *runtime = (HarpRuntime *)api->p_core;
+    HarpRuntime *runtime = ((HarpCoreApiImpl *)api)->p_runtime;
     return runtime_get_api(runtime, name, out_api);
 }
 HarpResult core_get_handler(HarpCoreApi *api, const HarpName name, HarpHandlerBase** out_handler) {
-    HarpRuntime *runtime = (HarpRuntime *)api->p_core;
+    HarpRuntime *runtime = ((HarpCoreApiImpl *)api)->p_runtime;
     return runtime_get_handler(runtime, name, out_handler);
 }
 HarpResult core_get_api_desc(HarpCoreApi *api, const HarpName name, HarpApiDesc **out_desc) {
-    HarpRuntime *runtime = (HarpRuntime *)api->p_core;
+    HarpRuntime *runtime = ((HarpCoreApiImpl *)api)->p_runtime;
     return runtime_get_api_desc(runtime, name, out_desc);
 }
 HarpResult core_get_handler_desc(HarpCoreApi *api, const HarpName name, HarpHandlerDesc** out_desc) {
-    HarpRuntime *runtime = (HarpRuntime *)api->p_core;
+    HarpRuntime *runtime = ((HarpCoreApiImpl *)api)->p_runtime;
     return runtime_get_handler_desc(runtime, name, out_desc);
 }
 HarpResult core_get_actor_desc(HarpCoreApi *api, const HarpName name, HarpActorDesc** out_desc) {
-    HarpRuntime *runtime = (HarpRuntime *)api->p_core;
+    HarpRuntime *runtime = ((HarpCoreApiImpl *)api)->p_runtime;
     return runtime_get_actor_desc(runtime, name, out_desc);
 }
 
 HarpResult core_handler_initialize(HarpCoreApi *api, const HarpName name, const HarpCreatorBase* creator) {
-    HarpRuntime *runtime = (HarpRuntime *)api->p_core;
+    HarpRuntime *runtime = ((HarpCoreApiImpl *)api)->p_runtime;
     return runtime_handler_initialize(runtime, name, creator);
 }
 HarpResult core_handler_terminate(HarpCoreApi *api, const HarpName name) {
-    HarpRuntime *runtime = (HarpRuntime *)api->p_core;
+    HarpRuntime *runtime = ((HarpCoreApiImpl *)api)->p_runtime;
     return runtime_handler_terminate(runtime, name);
 }
 
 HarpResult core_actor_create(HarpCoreApi *api, const HarpName name, const HarpCreatorBase* creator, HarpActorBase** out_actor) {
-    HarpRuntime *runtime = (HarpRuntime *)api->p_core;
+    HarpRuntime *runtime = ((HarpCoreApiImpl *)api)->p_runtime;
     return runtime_actor_create(runtime, name, creator, out_actor);
 }
 HarpResult core_actor_destroy(HarpCoreApi *api, const HarpName name, HarpActorBase* actor) {
-    HarpRuntime *runtime = (HarpRuntime *)api->p_core;
+    HarpRuntime *runtime = ((HarpCoreApiImpl *)api)->p_runtime;
     return runtime_actor_destroy(runtime, name, actor);
 }
 
 HarpResult core_get_executable_directory(HarpCoreApi *api, const char **out_path) {
-    HarpRuntime *runtime = (HarpRuntime *)api->p_core;
+    HarpRuntime *runtime = ((HarpCoreApiImpl *)api)->p_runtime;
     return runtime_get_executable_directory(runtime, out_path);
 }
 HarpResult core_get_working_directory(HarpCoreApi *api, const char **out_path) {
-    HarpRuntime *runtime = (HarpRuntime *)api->p_core;
+    HarpRuntime *runtime = ((HarpCoreApiImpl *)api)->p_runtime;
     return runtime_get_working_directory(runtime, out_path);
 }
 HarpResult core_get_package_directory(HarpCoreApi *api, const HarpName name, const char **out_path) {
-    HarpRuntime *runtime = (HarpRuntime *)api->p_core;
+    HarpRuntime *runtime = ((HarpCoreApiImpl *)api)->p_runtime;
     return runtime_get_package_directory(runtime, name, out_path);
 }
 

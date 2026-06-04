@@ -60,6 +60,10 @@ typedef struct HarpPendingPackage {
 /*  INITIALIZATION                                                                  */
 /* ================================================================================ */
 
+HarpVersion harp_version(void) {
+    return HARP_MAKE_VERSION(1, 0, 1);
+}
+
 HarpResult harp_initialize(
     const HarpCreatorBase *creator,
     HarpRuntime **out_runtime
@@ -82,8 +86,8 @@ HarpResult harp_initialize(
     HarpApiDesc core_api_desc = {
         .name = HARP_CORE_API_NAME,
         .version = HARP_CORE_API_VERSION,
-        .instance_size = sizeof(HarpCoreApi),
-        .instance_alignment = alignof(HarpCoreApi)
+        .instance_size = sizeof(HarpCoreApiImpl),
+        .instance_alignment = alignof(HarpCoreApiImpl)
     };
     HarpApiBase *core_api_base = NULL;
 
@@ -94,36 +98,36 @@ HarpResult harp_initialize(
     ) != HARP_RESULT_OK)
         goto fail_setup;
 
-    HarpCoreApi *core_api = (HarpCoreApi *)core_api_base;
-    core_api->p_core = (HarpHandlerBase *)runtime;
+    HarpCoreApiImpl *core_api = (HarpCoreApiImpl *)core_api_base;
+    core_api->p_runtime = runtime;
 
     /* registration */
-    core_api->register_api = core_register_api;
-    core_api->register_handler = core_register_handler;
-    core_api->register_actor = core_register_actor;
+    core_api->core_api.register_api = core_register_api;
+    core_api->core_api.register_handler = core_register_handler;
+    core_api->core_api.register_actor = core_register_actor;
 
     /* retrieval */
-    core_api->get_api = core_get_api;
-    core_api->get_handler = core_get_handler;
+    core_api->core_api.get_api = core_get_api;
+    core_api->core_api.get_handler = core_get_handler;
 
-    core_api->get_api_desc = core_get_api_desc;
-    core_api->get_handler_desc = core_get_handler_desc;
-    core_api->get_actor_desc = core_get_actor_desc;
+    core_api->core_api.get_api_desc = core_get_api_desc;
+    core_api->core_api.get_handler_desc = core_get_handler_desc;
+    core_api->core_api.get_actor_desc = core_get_actor_desc;
 
     /* lifecycle */
-    core_api->handler_initialize = core_handler_initialize;
-    core_api->handler_terminate = core_handler_terminate;
-    core_api->actor_create = core_actor_create;
-    core_api->actor_destroy = core_actor_destroy;
+    core_api->core_api.handler_initialize = core_handler_initialize;
+    core_api->core_api.handler_terminate = core_handler_terminate;
+    core_api->core_api.actor_create = core_actor_create;
+    core_api->core_api.actor_destroy = core_actor_destroy;
 
     /* paths */
-    core_api->get_executable_directory = core_get_executable_directory;
-    core_api->get_working_directory = core_get_working_directory;
-    core_api->get_package_directory = core_get_package_directory;
+    core_api->core_api.get_executable_directory = core_get_executable_directory;
+    core_api->core_api.get_working_directory = core_get_working_directory;
+    core_api->core_api.get_package_directory = core_get_package_directory;
 
     core_api_base->available = 1;
 
-    runtime->core_api = core_api;
+    runtime->core_api = (HarpCoreApi *)core_api;
 
     *out_runtime = runtime;
 

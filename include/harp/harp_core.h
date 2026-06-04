@@ -21,6 +21,8 @@ struct HarpRuntimeCreator {
 /*  INTERFACE                                                                       */
 /* ================================================================================ */
 
+HarpVersion harp_version(void);
+
 HarpResult harp_initialize(
     const HarpCreatorBase *creator,
     HarpRuntime **out_runtime

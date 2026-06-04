@@ -4,6 +4,13 @@
 #include <harp/harp_core.h>
 
 
+typedef struct HarpCoreApiImpl {
+    HarpCoreApi core_api;
+    HarpRuntime *p_runtime;
+} HarpCoreApiImpl;
+
+
+
 // HarpCoreApi's impl
 HarpResult core_register_api(HarpCoreApi *api, const HarpApiDesc* desc, HarpApiBase** out_api);
 HarpResult core_register_handler(HarpCoreApi *api, const HarpHandlerDesc* desc);

@@ -110,7 +110,7 @@ if(HARP_BUILD_TOOL)
 
     target_link_libraries(
         harp PRIVATE
-        HARP::Interface
+        HARP::Harp
     )
 
 endif()

@@ -153,7 +153,6 @@ struct HarpCreatorBase {
 
 struct HarpCoreApi {
     HarpApiBase _base;
-    HarpHandlerBase *p_core;
 
     /* Registration */
     HarpResult (*register_api)(HarpCoreApi *api, const HarpApiDesc* desc, HarpApiBase** out_api);
