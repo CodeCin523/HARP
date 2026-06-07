@@ -61,7 +61,7 @@ typedef struct HarpPendingPackage {
 /* ================================================================================ */
 
 HarpVersion harp_version(void) {
-    return HARP_MAKE_VERSION(1, 0, 1);
+    return HARP_MAKE_VERSION(1, 0, 2);
 }
 
 HarpResult harp_initialize(
@@ -162,24 +162,24 @@ HarpResult harp_terminate(
 
 HarpResult harp_runtime_get_api(
     HarpRuntime *runtime,
-    const HarpName name,
+    const HarpDependencyDesc *dependency,
     HarpApiBase **out_api
 ) {
     return runtime_get_api(
         runtime,
-        name,
+        dependency,
         out_api
     );
 }
 
 HarpResult harp_runtime_get_handler(
     HarpRuntime *runtime,
-    const HarpName name,
+    const HarpDependencyDesc *dependency,
     HarpHandlerBase **out_handler
 ) {
     return runtime_get_handler(
         runtime,
-        name,
+        dependency,
         out_handler
     );
 }

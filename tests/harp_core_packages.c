@@ -32,11 +32,16 @@ int main(
     /* get core api */
 
     HarpApiBase *core_base = NULL;
+    HarpDependencyDesc dep_desc = {
+        .name = HARP_CORE_API_NAME,
+        .min_version = 0,
+        .max_version = UINT32_MAX
+    };
 
     res =
         harp_runtime_get_api(
             runtime,
-            HARP_CORE_API_NAME,
+            &dep_desc,
             &core_base
         );
 
@@ -79,11 +84,12 @@ int main(
     /* get test api */
 
     HarpApiBase *api_base = NULL;
+    dep_desc.name = TEST_API_NAME;
 
     res =
         harp_runtime_get_api(
             runtime,
-            TEST_API_NAME,
+            &dep_desc,
             &api_base
         );
 
@@ -105,11 +111,12 @@ int main(
     /* get handler */
 
     HarpHandlerBase *handler = NULL;
+    dep_desc.name = "test_handler";
 
     res =
         harp_runtime_get_handler(
             runtime,
-            "test_handler",
+            &dep_desc,
             &handler
         );
 

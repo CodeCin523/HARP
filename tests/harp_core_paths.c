@@ -30,11 +30,16 @@ int main(int argc, char **argv) {
     /* ===================================================================== */
 
     HarpApiBase *core_base = NULL;
+    HarpDependencyDesc dep_desc = {
+        HARP_CORE_API_NAME,
+        0,
+        UINT32_MAX
+    };
 
     res =
         harp_runtime_get_api(
             runtime,
-            HARP_CORE_API_NAME,
+            &dep_desc,
             &core_base
         );
 

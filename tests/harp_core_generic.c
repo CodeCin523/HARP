@@ -111,14 +111,19 @@ int main(int argc, char **argv) {
     /* ------------------------------------------------------------------------ */
 
     HarpApiBase *core_api_base = NULL;
+    HarpDependencyDesc dep_desc = {
+        HARP_CORE_API_NAME,
+        0,
+        UINT32_MAX
+    };
 
-    assert(
-        harp_runtime_get_api(
-            runtime,
-            HARP_CORE_API_NAME,
-            &core_api_base
-        ) == HARP_RESULT_OK
+    HarpResult result = harp_runtime_get_api(
+        runtime,
+        &dep_desc,
+        &core_api_base
     );
+
+    assert(result == HARP_RESULT_OK);
 
     assert(core_api_base != NULL);
     assert(core_api_base->available == 1);
@@ -161,11 +166,12 @@ int main(int argc, char **argv) {
     /* ------------------------------------------------------------------------ */
 
     HarpHandlerBase *handler_base = NULL;
+    dep_desc.name = "test_handler";
 
     assert(
         core_api->get_handler(
             core_api,
-            "test_handler",
+            &dep_desc,
             &handler_base
         ) == HARP_RESULT_OK
     );

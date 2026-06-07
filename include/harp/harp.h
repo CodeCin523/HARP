@@ -149,7 +149,7 @@ struct HarpCreatorBase {
 /* ================================================================================ */
 
 #define HARP_CORE_API_NAME "HarpCoreApi"
-#define HARP_CORE_API_VERSION HARP_MAKE_VERSION(1,0,0)
+#define HARP_CORE_API_VERSION HARP_MAKE_VERSION(2,0,0)
 
 struct HarpCoreApi {
     HarpApiBase _base;
@@ -160,8 +160,8 @@ struct HarpCoreApi {
     HarpResult (*register_actor)(HarpCoreApi *api, const HarpActorDesc* desc);
 
     /* Retrieval */
-    HarpResult (*get_api)(HarpCoreApi *api, const HarpName name, HarpApiBase **out_api);
-    HarpResult (*get_handler)(HarpCoreApi *api, const HarpName name, HarpHandlerBase** out_handler);
+    HarpResult (*get_api)(HarpCoreApi *api, const HarpDependencyDesc *dependency, HarpApiBase **out_api);
+    HarpResult (*get_handler)(HarpCoreApi *api, const HarpDependencyDesc *dependency, HarpHandlerBase** out_handler);
     HarpResult (*get_api_desc)(HarpCoreApi *api, const HarpName name, HarpApiDesc **out_desc);
     HarpResult (*get_handler_desc)(HarpCoreApi *api, const HarpName name, HarpHandlerDesc** out_desc);
     HarpResult (*get_actor_desc)(HarpCoreApi *api, const HarpName name, HarpActorDesc** out_desc);
@@ -177,6 +177,11 @@ struct HarpCoreApi {
     HarpResult (*get_executable_directory)(HarpCoreApi *api, const char **out_path);
     HarpResult (*get_working_directory)(HarpCoreApi *api, const char **out_path);
     HarpResult (*get_package_directory)(HarpCoreApi *api, const HarpName name, const char **out_path);
+
+    /* Actor Enumeration */
+    // HarpResult (*get_actor_count)(HarpCoreApi *api, const HarpName name, uint64_t *out_count);
+    // HarpResult (*get_actor_at)(HarpCoreApi *api, const HarpName name, uint64_t index, HarpActorBase **out_actor);
+    // HarpResult (*get_actors)(HarpCoreApi *api, const HarpName name, uint64_t *inout_count, HarpActorBase ***out_actors);
 };
 
 #define HARP_EXTENDED_API_NAME "HarpExtendedApi"

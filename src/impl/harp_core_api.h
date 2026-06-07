@@ -16,8 +16,8 @@ HarpResult core_register_api(HarpCoreApi *api, const HarpApiDesc* desc, HarpApiB
 HarpResult core_register_handler(HarpCoreApi *api, const HarpHandlerDesc* desc);
 HarpResult core_register_actor(HarpCoreApi *api, const HarpActorDesc* desc);
 
-HarpResult core_get_api(HarpCoreApi *api, const HarpName name, HarpApiBase **out_api);
-HarpResult core_get_handler(HarpCoreApi *api, const HarpName name, HarpHandlerBase** out_handler);
+HarpResult core_get_api(HarpCoreApi *api, const HarpDependencyDesc *dependency, HarpApiBase **out_api);
+HarpResult core_get_handler(HarpCoreApi *api, const HarpDependencyDesc *dependency, HarpHandlerBase** out_handler);
 HarpResult core_get_api_desc(HarpCoreApi *api, const HarpName name, HarpApiDesc **out_desc);
 HarpResult core_get_handler_desc(HarpCoreApi *api, const HarpName name, HarpHandlerDesc** out_desc);
 HarpResult core_get_actor_desc(HarpCoreApi *api, const HarpName name, HarpActorDesc** out_desc);
@@ -38,8 +38,8 @@ HarpResult runtime_register_api(HarpRuntime *runtime, const HarpApiDesc* desc, H
 HarpResult runtime_register_handler(HarpRuntime *runtime, const HarpHandlerDesc* desc);
 HarpResult runtime_register_actor(HarpRuntime *runtime, const HarpActorDesc* desc);
 
-HarpResult runtime_get_api(HarpRuntime *runtime, const HarpName name, HarpApiBase **out_api);
-HarpResult runtime_get_handler(HarpRuntime *runtime, const HarpName name, HarpHandlerBase** out_handler);
+HarpResult runtime_get_api(HarpRuntime *runtime, const HarpDependencyDesc *dependency, HarpApiBase **out_api);
+HarpResult runtime_get_handler(HarpRuntime *runtime, const HarpDependencyDesc *dependency, HarpHandlerBase** out_handler);
 HarpResult runtime_get_api_desc(HarpRuntime *runtime, const HarpName name, HarpApiDesc **out_desc);
 HarpResult runtime_get_handler_desc(HarpRuntime *runtime, const HarpName name, HarpHandlerDesc** out_desc);
 HarpResult runtime_get_actor_desc(HarpRuntime *runtime, const HarpName name, HarpActorDesc** out_desc);
