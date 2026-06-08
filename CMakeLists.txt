@@ -6,7 +6,7 @@ cmake_minimum_required(VERSION 3.17)
 
 project(
     HARP
-    VERSION 1.0.1
+    VERSION 1.0.2
     DESCRIPTION
         "HARP is a minimal runtime that orchestrates modular behavior through runtime-loaded packages."
     LANGUAGES C
@@ -56,11 +56,11 @@ target_compile_features(
 add_library(Harp SHARED)
 add_library(HARP::Harp ALIAS Harp)
 
-set_target_properties(
-    Harp PROPERTIES
-    VERSION ${PROJECT_VERSION}
-    SOVERSION ${PROJECT_VERSION_MAJOR}
-)
+# set_target_properties(
+#     Harp PROPERTIES
+#     VERSION ${PROJECT_VERSION}
+#     SOVERSION ${PROJECT_VERSION_MAJOR}
+# )
 
 target_sources(
     Harp PRIVATE
