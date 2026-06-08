@@ -296,6 +296,79 @@ int main(int argc, char **argv) {
 
 
     /* ------------------------------------------------------------------------ */
+    /* Get Actor Count                                                          */
+    /* ------------------------------------------------------------------------ */
+
+    uint64_t actor_count = 0;
+
+    assert(
+        core_api->get_actor_count(
+            core_api,
+            "test_actor",
+            &actor_count
+        ) == HARP_RESULT_OK
+    );
+
+    assert(actor_count == 1);
+
+    printf("[OK] get actor count\n");
+
+
+    /* ------------------------------------------------------------------------ */
+    /* Get Actor At                                                             */
+    /* ------------------------------------------------------------------------ */
+
+    HarpActorBase *actor_at = NULL;
+
+    assert(
+        core_api->get_actor_at(
+            core_api,
+            "test_actor",
+            0,
+            &actor_at
+        ) == HARP_RESULT_OK
+    );
+
+    assert(actor_at == actor_base);
+
+    printf("[OK] get actor at\n");
+
+    
+    /* ------------------------------------------------------------------------ */
+    /* Get Actors                                                               */
+    /* ------------------------------------------------------------------------ */
+
+    uint64_t actor_array_count = 0;
+
+    assert(
+        core_api->get_actors(
+            core_api,
+            "test_actor",
+            &actor_array_count,
+            NULL
+        ) == HARP_RESULT_OK
+    );
+
+    assert(actor_array_count == 1);
+
+    HarpActorBase *actors[1] = {0};
+
+    assert(
+        core_api->get_actors(
+            core_api,
+            "test_actor",
+            &actor_array_count,
+            actors
+        ) == HARP_RESULT_OK
+    );
+
+    assert(actor_array_count == 1);
+    assert(actors[0] == actor_base);
+
+    printf("[OK] get actors\n");
+
+
+    /* ------------------------------------------------------------------------ */
     /* Destroy Actor                                                             */
     /* ------------------------------------------------------------------------ */
 

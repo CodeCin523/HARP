@@ -201,7 +201,7 @@ HarpActorBase *harp_alloc_actor(HarpRuntime *runtime, HarpActorRuntimeDesc *rdes
     if(ptr != NULL)
         return ptr;
 
-    size_t count = 4 << rdesc->growth_index;
+    size_t count = 4 << rdesc->page_growth_index;
     size_t size = count * rdesc->_base.instance_size;
 
     void *pool = malloc(size);
@@ -221,6 +221,6 @@ HarpActorBase *harp_alloc_actor(HarpRuntime *runtime, HarpActorRuntimeDesc *rdes
 
     hmem_block_update(&rdesc->inst_block);
 
-    ++rdesc->growth_index;
+    ++rdesc->page_growth_index;
     return hmem_block_alloc_single(&rdesc->inst_block);
 }

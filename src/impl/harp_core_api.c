@@ -6,6 +6,7 @@
 #include <hmem/hmem_os.h>
 #include <hmem/utils/hmem_align.h>
 
+#include <stdlib.h>
 #include <string.h>
 #include <stdalign.h>
 
@@ -124,6 +125,27 @@ HarpResult core_get_package_directory(HarpCoreApi *api, const HarpName name, con
     return runtime_get_package_directory(runtime, name, out_path);
 }
 
+HarpResult core_get_actor_count(HarpCoreApi *api, const HarpName name, uint64_t *out_count) {
+    if(utils_check_core_api(api) != HARP_RESULT_OK)
+        return HARP_RESULT_INVALID_ARGUMENTS;
+
+    HarpRuntime *runtime = ((HarpCoreApiImpl *)api)->p_runtime;
+    return runtime_get_actor_count(runtime, name, out_count);
+}
+HarpResult core_get_actor_at(HarpCoreApi *api, const HarpName name, uint64_t index, HarpActorBase **out_actor) {
+    if(utils_check_core_api(api) != HARP_RESULT_OK)
+        return HARP_RESULT_INVALID_ARGUMENTS;
+
+    HarpRuntime *runtime = ((HarpCoreApiImpl *)api)->p_runtime;
+    return runtime_get_actor_at(runtime, name, index, out_actor);
+}
+HarpResult core_get_actors(HarpCoreApi *api, const HarpName name, uint64_t *inout_count, HarpActorBase **out_actors) {
+    if(utils_check_core_api(api) != HARP_RESULT_OK)
+        return HARP_RESULT_INVALID_ARGUMENTS;
+
+    HarpRuntime *runtime = ((HarpCoreApiImpl *)api)->p_runtime;
+    return runtime_get_actors(runtime, name, inout_count, out_actors);
+}
 
 /* ================================================================================ */
 /*  HarpRuntime's impl                                                              */
@@ -346,7 +368,7 @@ HarpResult runtime_register_actor(
         return HARP_RESULT_OUT_OF_MEMORY;
 
     rdesc->_base.name = rname;
-    rdesc->growth_index = 0;
+    rdesc->page_growth_index = 0;
 
     // Store parent handler name in registry memory
     if(desc->parent_handler != NULL) {
@@ -390,6 +412,10 @@ HarpResult runtime_register_actor(
         hmem_teardown_book(&rdesc->inst_book);
         return res;
     }
+
+    rdesc->actors = NULL;
+    rdesc->actor_count = 0;
+    rdesc->actor_capacity = 0;
 
     return HARP_RESULT_OK;
 }
@@ -792,6 +818,25 @@ HarpResult runtime_actor_create(
             return HARP_RESULT_DEPENDENCY_UNINITIALIZED;
     }
 
+    // grow actor pointer array
+    if(actor_rdesc->actor_count >= actor_rdesc->actor_capacity) {
+        uint64_t new_capacity =
+            actor_rdesc->actor_capacity == 0
+            ? 16
+            : actor_rdesc->actor_capacity * 2;
+
+        void *new_ptr = realloc(
+            actor_rdesc->actors,
+            sizeof(HarpActorBase*) * new_capacity
+        );
+
+        if(new_ptr == NULL)
+            return HARP_RESULT_OUT_OF_MEMORY;
+
+        actor_rdesc->actors = new_ptr;
+        actor_rdesc->actor_capacity = new_capacity;
+    }
+
     // allocate actor instance
     HarpActorBase *actor_base = harp_alloc_actor(runtime, actor_rdesc);
     if(actor_base == NULL) {
@@ -812,7 +857,10 @@ HarpResult runtime_actor_create(
         );
 
     if(res == HARP_RESULT_OK) {
+        actor_rdesc->actors[actor_rdesc->actor_count++] = actor_base;
+
         *out_actor = actor_base;
+
         ++handler_rdesc->actor_count;
     } else {
         hmem_block_free_single(
@@ -872,6 +920,18 @@ HarpResult runtime_actor_destroy(
         );
 
     if(res == HARP_RESULT_OK) {
+        /* remove actor from runtime list */
+        for(uint64_t i = 0; i < actor_rdesc->actor_count; ++i) {
+            if(actor_rdesc->actors[i] == actor) {
+
+                actor_rdesc->actors[i] =
+                    actor_rdesc->actors[actor_rdesc->actor_count-1];
+
+                --actor_rdesc->actor_count;
+                break;
+            }
+        }
+
         hmem_block_free_single(
             &actor_rdesc->inst_block,
             actor
@@ -954,5 +1014,85 @@ HarpResult runtime_get_package_directory(
         return HARP_RESULT_CRITICAL_FAIL;
 
     *out_path = rdesc->directory;
+    return HARP_RESULT_OK;
+}
+
+
+/* ================================================================================ */
+/*  ACTOR ENUMERATION                                                               */
+/* ================================================================================ */
+
+HarpResult runtime_get_actor_count(
+    HarpRuntime *runtime,
+    const HarpName name,
+    uint64_t *out_count
+) {
+    if(utils_check_runtime(runtime) != HARP_RESULT_OK || name == NULL)
+        return HARP_RESULT_INVALID_ARGUMENTS;
+
+    if(out_count == NULL)
+        return HARP_RESULT_MISSING_OUTPUT;
+
+    HarpActorRuntimeDesc *rdesc = harp_registry_get(&runtime->registry, name, HARP_REGISTRY_ENTRY_TYPE_ACTOR); 
+    if(rdesc == NULL)
+        return HARP_RESULT_NAME_NOT_FOUND;
+
+    *out_count = rdesc->actor_count;
+    return HARP_RESULT_OK;
+}
+
+HarpResult runtime_get_actor_at(
+    HarpRuntime *runtime,
+    const HarpName name,
+    uint64_t index,
+    HarpActorBase **out_actor
+) {
+    if(utils_check_runtime(runtime) != HARP_RESULT_OK || name == NULL)
+        return HARP_RESULT_INVALID_ARGUMENTS;
+
+    if(out_actor == NULL)
+        return HARP_RESULT_MISSING_OUTPUT;
+
+    HarpActorRuntimeDesc *rdesc = harp_registry_get(&runtime->registry, name, HARP_REGISTRY_ENTRY_TYPE_ACTOR); 
+    if(rdesc == NULL)
+        return HARP_RESULT_NAME_NOT_FOUND;
+
+    if(index >= rdesc->actor_count)
+        return HARP_RESULT_INVALID_ARGUMENTS;
+
+    *out_actor = rdesc->actors[index];
+    return HARP_RESULT_OK;
+}
+
+HarpResult runtime_get_actors(
+    HarpRuntime *runtime,
+    const HarpName name,
+    uint64_t *inout_count,
+    HarpActorBase **out_actors
+) {
+    if(utils_check_runtime(runtime) != HARP_RESULT_OK || name == NULL)
+        return HARP_RESULT_INVALID_ARGUMENTS;
+
+    if(inout_count == NULL)
+        return HARP_RESULT_MISSING_OUTPUT;
+
+    HarpActorRuntimeDesc *rdesc = harp_registry_get(&runtime->registry, name, HARP_REGISTRY_ENTRY_TYPE_ACTOR); 
+    if(rdesc == NULL)
+        return HARP_RESULT_NAME_NOT_FOUND;
+
+    if(out_actors == NULL) {
+        *inout_count = rdesc->actor_count;
+    } else {
+        uint64_t count = *inout_count;
+            
+        if(count > rdesc->actor_count)
+            count = rdesc->actor_count;
+            
+        for(uint64_t i = 0; i < count; ++i)
+            out_actors[i] = rdesc->actors[i];
+            
+        *inout_count = count;
+    }
+
     return HARP_RESULT_OK;
 }

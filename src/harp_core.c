@@ -61,7 +61,7 @@ typedef struct HarpPendingPackage {
 /* ================================================================================ */
 
 HarpVersion harp_version(void) {
-    return HARP_MAKE_VERSION(1, 0, 2);
+    return HARP_MAKE_VERSION(1, 0, 3);
 }
 
 HarpResult harp_initialize(
@@ -124,6 +124,11 @@ HarpResult harp_initialize(
     core_api->core_api.get_executable_directory = core_get_executable_directory;
     core_api->core_api.get_working_directory = core_get_working_directory;
     core_api->core_api.get_package_directory = core_get_package_directory;
+
+    /* api enumerate */
+    core_api->core_api.get_actor_count = core_get_actor_count;
+    core_api->core_api.get_actor_at = core_get_actor_at;
+    core_api->core_api.get_actors = core_get_actors;
 
     core_api_base->available = 1;
 

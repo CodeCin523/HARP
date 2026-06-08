@@ -149,7 +149,7 @@ struct HarpCreatorBase {
 /* ================================================================================ */
 
 #define HARP_CORE_API_NAME "HarpCoreApi"
-#define HARP_CORE_API_VERSION HARP_MAKE_VERSION(2,0,0)
+#define HARP_CORE_API_VERSION HARP_MAKE_VERSION(2,1,0)
 
 struct HarpCoreApi {
     HarpApiBase _base;
@@ -179,9 +179,9 @@ struct HarpCoreApi {
     HarpResult (*get_package_directory)(HarpCoreApi *api, const HarpName name, const char **out_path);
 
     /* Actor Enumeration */
-    // HarpResult (*get_actor_count)(HarpCoreApi *api, const HarpName name, uint64_t *out_count);
-    // HarpResult (*get_actor_at)(HarpCoreApi *api, const HarpName name, uint64_t index, HarpActorBase **out_actor);
-    // HarpResult (*get_actors)(HarpCoreApi *api, const HarpName name, uint64_t *inout_count, HarpActorBase ***out_actors);
+    HarpResult (*get_actor_count)(HarpCoreApi *api, const HarpName name, uint64_t *out_count);
+    HarpResult (*get_actor_at)(HarpCoreApi *api, const HarpName name, uint64_t index, HarpActorBase **out_actor);
+    HarpResult (*get_actors)(HarpCoreApi *api, const HarpName name, uint64_t *inout_count, HarpActorBase **out_actors);
 };
 
 #define HARP_EXTENDED_API_NAME "HarpExtendedApi"

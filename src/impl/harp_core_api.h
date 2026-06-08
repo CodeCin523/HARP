@@ -32,6 +32,10 @@ HarpResult core_get_executable_directory(HarpCoreApi *api, const char **out_path
 HarpResult core_get_working_directory(HarpCoreApi *api, const char **out_path);
 HarpResult core_get_package_directory(HarpCoreApi *api, const HarpName name, const char **out_path);
 
+HarpResult core_get_actor_count(HarpCoreApi *api, const HarpName name, uint64_t *out_count);
+HarpResult core_get_actor_at(HarpCoreApi *api, const HarpName name, uint64_t index, HarpActorBase **out_actor);
+HarpResult core_get_actors(HarpCoreApi *api, const HarpName name, uint64_t *inout_count, HarpActorBase **out_actors);
+
 
 // HarpRuntime's impl
 HarpResult runtime_register_api(HarpRuntime *runtime, const HarpApiDesc* desc, HarpApiBase** out_api);
@@ -54,5 +58,8 @@ HarpResult runtime_get_executable_directory(HarpRuntime *runtime, const char **o
 HarpResult runtime_get_working_directory(HarpRuntime *runtime, const char **out_path);
 HarpResult runtime_get_package_directory(HarpRuntime *runtime, const HarpName name, const char **out_path);
 
+HarpResult runtime_get_actor_count(HarpRuntime *runtime, const HarpName name, uint64_t *out_count);
+HarpResult runtime_get_actor_at(HarpRuntime *runtime, const HarpName name, uint64_t index, HarpActorBase **out_actor);
+HarpResult runtime_get_actors(HarpRuntime *runtime, const HarpName name, uint64_t *inout_count, HarpActorBase **out_actors);
 
 #endif /* IMPL_HARP_API_H */
