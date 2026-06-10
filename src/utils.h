@@ -3,7 +3,6 @@
 
 #include <harp/harp.h>
 
-#undef HARP_UTILS_UNDEF
 #include <harp/utils/harp_version.h>
 
 

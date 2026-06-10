@@ -1,9 +1,11 @@
 #ifndef UTILS_HARP_API_H
 #define UTILS_HARP_API_H
 
-#include "harp_version.h"
+#ifdef __cplusplus
+extern "C" {
+#endif
 
-#endif /* UTILS_HARP_API_H */
+#include "harp_version.h"
 
 
 /* ================================================================================ */
@@ -50,26 +52,13 @@
     ((api_ptr)->func(api_ptr, __VA_ARGS__))
 
 
-/* ================================================================================ */
-/*  UTILS_UNDEF                                                                     */
-/* ================================================================================ */
+#ifdef __cplusplus
+}
+#endif
+
+#endif /* UTILS_HARP_API_H */
+
 
 #ifdef HARP_UTILS_UNDEF
-
-#undef HARP_API_GET_BASE
-#undef HARP_API_AS
-
-#undef HARP_API_AVAILABLE
-
-#undef HARP_API_VERSION
-#undef HARP_API_MAJOR
-#undef HARP_API_MINOR
-#undef HARP_API_PATCH
-
-#undef HARP_API_WITH
-
-#undef HARP_API_REQUIRE
-
-#undef HARP_API_CALL
-
-#endif /* HARP_UTILS_UNDEF */
+    #error HARP_UTILS_UNDEF Invalid.
+#endif

@@ -10,15 +10,22 @@
 #include <hmem/hmem_book.h>
 #include <hmem/hmem_os.h>
 
-#undef HARP_UTILS_UNDEF
 #include <harp/utils/harp_api.h>
+#include <harp/utils/harp_platform.h>
 #include <harp/utils/harp_version.h>
+
+#if HARP_PLATFORM_UNKNOWN
+    #warning Unknown platform
+#endif
+#if HARP_ARCH_UNKNOWN || HARP_ARCH_X86 || HARP_ARCH_ARM32
+    #warning Unknown or unsupported architecture
+#endif
 
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
 
-#if defined(_WIN32)
+#if HARP_PLATFORM_WINDOWS
 
 #include <windows.h>
 
@@ -309,7 +316,7 @@ HarpResult harp_runtime_load_packages_from(
 
     char packages_path[4096];
 
-#if defined(_WIN32)
+#if HARP_PLATFORM_WINDOWS
 
     snprintf(
         packages_path,
@@ -358,7 +365,7 @@ HarpResult harp_runtime_load_packages_from(
     HarpPendingPackage *packages = NULL;
     uint64_t package_count = 0;
 
-#if defined(_WIN32)
+#if HARP_PLATFORM_WINDOWS
 
     do {
 
@@ -469,7 +476,7 @@ HarpResult harp_runtime_load_packages_from(
         if(query(&desc) != HARP_RESULT_OK ||
            desc == NULL) {
 
-#if defined(_WIN32)
+#if HARP_PLATFORM_WINDOWS
             FreeLibrary(library);
 #else
             dlclose(library);
@@ -487,7 +494,7 @@ HarpResult harp_runtime_load_packages_from(
 
         if(new_packages == NULL) {
 
-#if defined(_WIN32)
+#if HARP_PLATFORM_WINDOWS
             FreeLibrary(library);
 #else
             dlclose(library);
@@ -606,7 +613,7 @@ HarpResult harp_runtime_load_packages_from(
         if(bind_res != HARP_RESULT_OK)
             continue;
 
-#if defined(_WIN32)
+#if HARP_PLATFORM_WINDOWS
 
     } while(FindNextFileA(handle, &find_data));
 

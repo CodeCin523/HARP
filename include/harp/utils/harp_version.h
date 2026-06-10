@@ -1,7 +1,9 @@
 #ifndef UTIL_HARP_VERSION_H
 #define UTIL_HARP_VERSION_H
 
-#endif /* UTIL_HARP_VERSION_H */
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 
 /* ================================================================================ */
@@ -23,20 +25,13 @@
 #define HARP_VERSION_PATCH_EQUAL(v1, v2) (HARP_VERSION_PATCH(v1) == HARP_VERSION_PATCH(v2))
 
 
-/* ================================================================================ */
-/*  UTILS_UNDEF                                                                     */
-/* ================================================================================ */
+#ifdef __cplusplus
+}
+#endif
 
-#ifdef  HARP_UTILS_UNDEF
+#endif /* UTIL_HARP_VERSION_H */
 
-#undef HARP_MAKE_VERSION
 
-#undef HARP_VERSION_MAJOR
-#undef HARP_VERSION_MINOR
-#undef HARP_VERSION_PATCH
-
-#undef HARP_VERSION_EQUAL
-#undef HARP_VERSION_MAJOR_EQUAL
-#undef HARP_VERSION_MINOR_EQUAL
-
-#endif /* HARP_UTILS_UNDEF */
+#ifdef HARP_UTILS_UNDEF
+    #error HARP_UTILS_UNDEF Invalid.
+#endif

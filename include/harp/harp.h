@@ -8,7 +8,6 @@ extern "C" {
 #include <stddef.h>
 #include <stdint.h>
 
-#undef HARP_UTILS_UNDEF
 #include "utils/harp_version.h"
 
 
@@ -192,10 +191,6 @@ struct HarpExtendedApi {
     // Extendable API for package-specific extensions
 };
 
-
-#define HARP_UTILS_UNDEF
-#include "utils/harp_version.h"
-#undef HARP_UTILS_UNDEF
 
 #ifdef __cplusplus
 }
