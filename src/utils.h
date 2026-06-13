@@ -34,21 +34,15 @@ static inline HarpResult utils_check_actor_desc(const HarpActorDesc *actor) {
 
     return HARP_RESULT_OK;
 }
-static inline HarpResult utils_check_api_desc(const HarpApiDesc *api) {
-    if(api == NULL || api->name == NULL)
+
+static inline HarpResult utils_check_core_handler(const HarpCoreHandler *core) {
+    if(core == NULL)
         return HARP_RESULT_INVALID_ARGUMENTS;
 
     return HARP_RESULT_OK;
 }
 
-static inline HarpResult utils_check_core_api(HarpCoreApi *api) {
-    if(api == NULL)
-        return HARP_RESULT_INVALID_ARGUMENTS;
-
-    return HARP_RESULT_OK;
-}
-
-static inline HarpResult utils_check_runtime(HarpRuntime *runtime) {
+static inline HarpResult utils_check_runtime(const HarpRuntime *runtime) {
     if(runtime == NULL)
         return HARP_RESULT_INVALID_ARGUMENTS;
 

@@ -9,36 +9,25 @@
 #include <hmem/hmem_book.h>
 
 
-typedef enum HarpRuntimeState HarpRuntimeState; 
+typedef struct HarpRuntimePackage HarpRuntimePackage;
+typedef struct HarpRuntimeHandler HarpRuntimeHandler;
+typedef struct HarpRuntimeActor HarpRuntimeActor;
 
-typedef struct HarpPackageRuntimeDesc HarpPackageRuntimeDesc;
-typedef struct HarpHandlerRuntimeDesc HarpHandlerRuntimeDesc;
-typedef struct HarpActorRuntimeDesc HarpActorRuntimeDesc;
-typedef struct HarpApiRuntimeDesc HarpApiRuntimeDesc;
 
-enum HarpRuntimeState {
-    HARP_RUNTIME_STATE_UNINITIALIZED,
-    HARP_RUNTIME_STATE_INITIALIZING,
-    HARP_RUNTIME_STATE_INITIALIZED,
-    HARP_RUNTIME_STATE_TERMINATING,
-};
-
-struct HarpPackageRuntimeDesc {
-    HarpPackageDesc _base;
+struct HarpRuntimePackage {
+    HarpPackageDesc descriptor;
 
     char *directory;
 };
-struct HarpHandlerRuntimeDesc {
-    HarpHandlerDesc _base;
+struct HarpRuntimeHandler {
+    HarpHandlerDesc descriptor;
     HarpHandlerBase *instance;
 
     uint32_t dependent_count;
     uint32_t actor_count;
-
-    HarpRuntimeState state;
 };
-struct HarpActorRuntimeDesc {
-    HarpActorDesc _base;
+struct HarpRuntimeActor {
+    HarpActorDesc descriptor;
     hmem_book_t inst_book;
     hmem_block_t inst_block; // memory leaks
     
@@ -48,17 +37,14 @@ struct HarpActorRuntimeDesc {
     uint64_t actor_capacity;
     HarpActorBase **actors; // memory leaks
 };
-struct HarpApiRuntimeDesc {
-    HarpApiDesc _base;
-    HarpApiBase *instance;
-};
 
 struct HarpRuntime {
     HarpHandlerBase _base;
 
     HarpRegistry registry;
 
-    HarpCoreApi *core_api;
+    HarpCoreHandler *core_handler;
+    HarpExtendedHandler *extended_handler;
 
     char *executable_directory;
     char *working_directory;
@@ -75,7 +61,7 @@ void harp_teardown_runtime(HarpRuntime *runtime);
 
 void *harp_alloc_global(HarpRuntime *runtime, size_t size, size_t alignment);
 
-HarpActorBase *harp_alloc_actor(HarpRuntime *runtime, HarpActorRuntimeDesc *rdesc);
+HarpActorBase *harp_alloc_actor(HarpRuntime *runtime, HarpRuntimeActor *ract);
 
 
 #endif /* RUNTIME_HARP_RUNTIME_H */

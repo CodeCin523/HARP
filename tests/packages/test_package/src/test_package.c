@@ -5,95 +5,126 @@
 
 #include <stdalign.h>
 
+/* ========================================================= */
+/* Handler instance                                           */
+/* ========================================================= */
 
 typedef struct TestHandler {
     HarpHandlerBase _base;
 } TestHandler;
 
+/* ========================================================= */
+/* Implementation                                             */
+/* ========================================================= */
 
 static int test_add(
-    TestApi *api,
+    TestApi *self,
     int a,
     int b
 ) {
-    (void)api;
+    (void)self;
     return a + b;
 }
 
+/* ========================================================= */
+/* Handler lifecycle                                          */
+/* ========================================================= */
 
 static HarpResult test_handler_init(
-    HarpCoreApi *api,
+    HarpCoreHandler *core,
     HarpHandlerBase *handler,
     HarpCreatorBase *creator
 ) {
-    (void)api;
+    (void)core;
     (void)handler;
     (void)creator;
 
     return HARP_RESULT_OK;
 }
 
-
 static HarpResult test_handler_term(
-    HarpCoreApi *api,
+    HarpCoreHandler *core,
     HarpHandlerBase *handler
 ) {
-    (void)api;
+    (void)core;
     (void)handler;
 
     return HARP_RESULT_OK;
 }
 
+/* ========================================================= */
+/* Package registration                                       */
+/* ========================================================= */
 
 static HarpResult test_package_register(
-    HarpCoreApi *core
+    HarpCoreHandler *core
 ) {
-    /* API */
+    /* ----------------------------------------------------- */
+    /* Register handler                                      */
+    /* ----------------------------------------------------- */
 
-    HarpApiDesc api_desc = {
+    HarpHandlerDesc handler_desc = {
         .name = TEST_API_NAME,
         .version = TEST_API_VERSION,
 
         .instance_size = sizeof(TestApi),
-        .instance_alignment = alignof(TestApi)
+        .instance_alignment = alignof(TestApi),
+
+        .pfn_init = test_handler_init,
+        .pfn_term = test_handler_term,
+
+        .p_dependencies = NULL,
+        .dependency_count = 0
     };
 
-    HarpApiBase *base = NULL;
-
     HarpResult res =
-        core->register_api(
+        core->register_handler(
             core,
-            &api_desc,
+            &handler_desc
+        );
+
+    if (res != HARP_RESULT_OK)
+        return res;
+
+    /* ----------------------------------------------------- */
+    /* IMPORTANT: fetch handler instance AFTER registration  */
+    /* ----------------------------------------------------- */
+
+    HarpDependencyDesc dep = {
+        .name = TEST_API_NAME,
+        .min_version = TEST_API_VERSION,
+        .max_version = TEST_API_VERSION
+    };
+
+    HarpHandlerBase *base = NULL;
+
+    res =
+        core->get_handler(
+            core,
+            &dep,
             &base
         );
 
-    if(res != HARP_RESULT_OK)
+    if (res != HARP_RESULT_OK)
         return res;
 
-    TestApi *api =
-        HARP_API_AS(TestApi, base);
+    if (base == NULL)
+        return HARP_RESULT_CRITICAL_FAIL;
+
+    /* ----------------------------------------------------- */
+    /* Bind API (handler = API in your new model)            */
+    /* ----------------------------------------------------- */
+
+    TestApi *api = (TestApi *)base;
 
     api->add = test_add;
 
-    /* handler */
-
-    HarpHandlerDesc handler_desc = {
-        .name = "test_handler",
-        .version = HARP_MAKE_VERSION(1, 0, 0),
-
-        .instance_size = sizeof(TestHandler),
-        .instance_alignment = alignof(TestHandler),
-
-        .pfn_init = test_handler_init,
-        .pfn_term = test_handler_term
-    };
-
-    return core->register_handler(
-        core,
-        &handler_desc
-    );
+    return HARP_RESULT_OK;
 }
 
+/* ========================================================= */
+/* Package entry                                              */
+/* ========================================================= */
 
 HarpResult harp_package_query(
     HarpPackageDesc **out_desc
@@ -109,6 +140,5 @@ HarpResult harp_package_query(
     };
 
     *out_desc = &desc;
-
     return HARP_RESULT_OK;
 }

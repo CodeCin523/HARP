@@ -11,7 +11,7 @@ extern "C" {
 /* ================================================================================ */
 /*  MACROS                                                                          */
 /* ================================================================================ */
-
+/*
 // Get base API pointer from any derived API type
 // (HarpApiBase must be the first member)
 #define HARP_API_GET_BASE(api_ptr) \
@@ -50,7 +50,7 @@ extern "C" {
 
 #define HARP_API_CALL(api_ptr, func, ...) \
     ((api_ptr)->func(api_ptr, __VA_ARGS__))
-
+*/
 
 #ifdef __cplusplus
 }

@@ -40,7 +40,7 @@ static void test_bind_get() {
         harp_registry_bind(
             &r,
             name,
-            HARP_REGISTRY_ENTRY_TYPE_API,
+            HARP_REGISTRY_ENTRY_TYPE_HANDLER,
             &value
         ) == HARP_RESULT_OK
     );
@@ -49,7 +49,7 @@ static void test_bind_get() {
         harp_registry_get(
             &r,
             "foo",
-            HARP_REGISTRY_ENTRY_TYPE_API
+            HARP_REGISTRY_ENTRY_TYPE_HANDLER
         );
 
     assert(ptr == &value);
@@ -69,7 +69,7 @@ static void test_bind_missing_name() {
         harp_registry_bind(
             &r,
             "foo",
-            HARP_REGISTRY_ENTRY_TYPE_API,
+            HARP_REGISTRY_ENTRY_TYPE_HANDLER,
             &value
         ) == HARP_RESULT_NAME_NOT_FOUND
     );
@@ -93,7 +93,7 @@ static void test_duplicate_bind() {
         harp_registry_bind(
             &r,
             name,
-            HARP_REGISTRY_ENTRY_TYPE_API,
+            HARP_REGISTRY_ENTRY_TYPE_ACTOR,
             &a
         ) == HARP_RESULT_OK
     );
@@ -126,7 +126,7 @@ static void test_unbind() {
         harp_registry_bind(
             &r,
             name,
-            HARP_REGISTRY_ENTRY_TYPE_API,
+            HARP_REGISTRY_ENTRY_TYPE_HANDLER,
             &value
         ) == HARP_RESULT_OK
     );
@@ -135,7 +135,7 @@ static void test_unbind() {
         harp_registry_unbind(
             &r,
             name,
-            HARP_REGISTRY_ENTRY_TYPE_API
+            HARP_REGISTRY_ENTRY_TYPE_HANDLER
         ) == HARP_RESULT_OK
     );
 
@@ -143,7 +143,7 @@ static void test_unbind() {
         harp_registry_get(
             &r,
             name,
-            HARP_REGISTRY_ENTRY_TYPE_API
+            HARP_REGISTRY_ENTRY_TYPE_HANDLER
         );
 
     assert(ptr == NULL);
@@ -166,7 +166,7 @@ static void test_wrong_type() {
         harp_registry_bind(
             &r,
             name,
-            HARP_REGISTRY_ENTRY_TYPE_API,
+            HARP_REGISTRY_ENTRY_TYPE_ACTOR,
             &value
         ) == HARP_RESULT_OK
     );
@@ -208,7 +208,7 @@ static void test_many_entries() {
         harp_registry_bind(
             &r,
             na,
-            HARP_REGISTRY_ENTRY_TYPE_API,
+            HARP_REGISTRY_ENTRY_TYPE_HANDLER,
             &a
         ) == HARP_RESULT_OK
     );
@@ -235,7 +235,7 @@ static void test_many_entries() {
         harp_registry_bind(
             &r,
             nd,
-            HARP_REGISTRY_ENTRY_TYPE_API,
+            HARP_REGISTRY_ENTRY_TYPE_HANDLER,
             &d
         ) == HARP_RESULT_OK
     );
@@ -244,7 +244,7 @@ static void test_many_entries() {
         harp_registry_get(
             &r,
             "a",
-            HARP_REGISTRY_ENTRY_TYPE_API
+            HARP_REGISTRY_ENTRY_TYPE_HANDLER
         ) == &a
     );
 
@@ -268,7 +268,7 @@ static void test_many_entries() {
         harp_registry_get(
             &r,
             "d",
-            HARP_REGISTRY_ENTRY_TYPE_API
+            HARP_REGISTRY_ENTRY_TYPE_HANDLER
         ) == &d
     );
 
@@ -276,7 +276,7 @@ static void test_many_entries() {
         harp_registry_get(
             &r,
             "z",
-            HARP_REGISTRY_ENTRY_TYPE_API
+            HARP_REGISTRY_ENTRY_TYPE_HANDLER
         ) == NULL
     );
 

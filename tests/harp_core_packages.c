@@ -2,16 +2,14 @@
 #include <stdio.h>
 
 #include <harp/harp_core.h>
-#include <harp/utils/harp_api.h>
-
 #include <test_package/test_api.h>
 
-
-int main(
-    int argc,
-    char **argv
-) {
+int main(int argc, char **argv) {
     printf("=== HARP PACKAGE TEST ===\n");
+
+    /* ===================================================================== */
+    /* INIT RUNTIME                                                          */
+    /* ===================================================================== */
 
     HarpRuntimeCreator creator = {
         .argv0 = argv[0]
@@ -26,113 +24,97 @@ int main(
         );
 
     assert(res == HARP_RESULT_OK);
+    assert(runtime != NULL);
 
     printf("[OK] runtime initialize\n");
 
-    /* get core api */
+    /* ===================================================================== */
+    /* LOAD PACKAGES                                                        */
+    /* ===================================================================== */
 
-    HarpApiBase *core_base = NULL;
-    HarpDependencyDesc dep_desc = {
-        .name = HARP_CORE_API_NAME,
+    res = harp_runtime_load_packages(runtime);
+    assert(res == HARP_RESULT_OK);
+
+    printf("[OK] package loading\n");
+
+    /* ===================================================================== */
+    /* GET CORE HANDLER                                                     */
+    /* ===================================================================== */
+
+    HarpDependencyDesc core_dep = {
+        .name = HARP_CORE_HANDLER_NAME,
         .min_version = 0,
         .max_version = UINT32_MAX
     };
 
+    HarpHandlerBase *core_base = NULL;
+
     res =
-        harp_runtime_get_api(
+        harp_runtime_get_handler(
             runtime,
-            &dep_desc,
+            &core_dep,
             &core_base
         );
 
     assert(res == HARP_RESULT_OK);
     assert(core_base != NULL);
 
-    HarpCoreApi *core =
-        HARP_API_AS(HarpCoreApi, core_base);
+    HarpCoreHandler *core = (HarpCoreHandler *)core_base;
 
-    printf("[OK] get core api\n");
+    printf("[OK] get core handler\n");
 
-    /* load packages */
-
-    res =
-        harp_runtime_load_packages(
-            runtime
-        );
-
-    assert(res == HARP_RESULT_OK);
-
-    printf("[OK] package loading\n");
-
-    /* get package directory */
-
+    /* ===================================================================== */
+    /* GET PACKAGE DIRECTORY                                                */
+    /* ===================================================================== */
     const char *package_dir = NULL;
 
-    res =
-        core->get_package_directory(
-            core,
-            "test_package",
-            &package_dir
-        );
+    res = core->get_package_directory(
+        core,
+        "test_package",
+        &package_dir
+    );
 
     assert(res == HARP_RESULT_OK);
     assert(package_dir != NULL);
 
-    printf("[OK] get package directory\n");
-    printf("package path: %s\n", package_dir);
+    printf("[OK] get package directory: %s\n", package_dir);
 
-    /* get test api */
+    /* ===================================================================== */
+    /* GET PACKAGE HANDLER (test_api handler)                               */
+    /* ===================================================================== */
 
-    HarpApiBase *api_base = NULL;
-    dep_desc.name = TEST_API_NAME;
+    HarpDependencyDesc dep = {
+        .name = TEST_API_NAME,
+        .min_version = 0,
+        .max_version = UINT32_MAX
+    };
+
+    HarpHandlerBase *api_base = NULL;
 
     res =
-        harp_runtime_get_api(
+        harp_runtime_get_handler(
             runtime,
-            &dep_desc,
+            &dep,
             &api_base
         );
 
     assert(res == HARP_RESULT_OK);
     assert(api_base != NULL);
 
-    printf("[OK] get package api\n");
+    TestApi *api = (TestApi *)api_base;
 
-    TestApi *api =
-        HARP_API_AS(TestApi, api_base);
+    printf("[OK] get test handler\n");
 
-    int value =
-        api->add(api, 2, 3);
-
-    assert(value == 5);
-
-    printf("[OK] api function call\n");
-
-    /* get handler */
-
-    HarpHandlerBase *handler = NULL;
-    dep_desc.name = "test_handler";
-
-    res =
-        harp_runtime_get_handler(
-            runtime,
-            &dep_desc,
-            &handler
-        );
-
-    assert(res == HARP_RESULT_OK);
-    assert(handler != NULL);
-
-    printf("[OK] get package handler\n");
-
-    /* initialize handler */
+    /* ===================================================================== */
+    /* INITIALIZE HANDLER                                                   */
+    /* ===================================================================== */
 
     HarpCreatorBase empty_creator = {0};
 
     res =
         core->handler_initialize(
             core,
-            "test_handler",
+            TEST_API_NAME,
             &empty_creator
         );
 
@@ -140,7 +122,22 @@ int main(
 
     printf("[OK] handler initialize\n");
 
-    harp_terminate(runtime);
+    /* ===================================================================== */
+    /* CALL FUNCTION                                                        */
+    /* ===================================================================== */
+
+    int value = api->add(api, 2, 3);
+
+    assert(value == 5);
+
+    printf("[OK] api function call\n");
+
+    /* ===================================================================== */
+    /* TERMINATE                                                            */
+    /* ===================================================================== */
+
+    res = harp_terminate(runtime);
+    assert(res == HARP_RESULT_OK);
 
     printf("[OK] runtime terminate\n");
 

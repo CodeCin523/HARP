@@ -31,11 +31,6 @@ HarpResult harp_terminate(
     HarpRuntime *runtime
 );
 
-HarpResult harp_runtime_get_api(
-    HarpRuntime *runtime,
-    const HarpDependencyDesc *dependency,
-    HarpApiBase **out_api
-);
 HarpResult harp_runtime_get_handler(
     HarpRuntime *runtime,
     const HarpDependencyDesc *dependency,

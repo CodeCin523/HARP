@@ -130,7 +130,8 @@ HarpResult harp_setup_runtime(HarpRuntime *runtime, HarpRuntimeCreator *creator)
     if(runtime_setup_paths(runtime, creator) != HARP_RESULT_OK)
         goto fail_pages;
 
-    runtime->core_api = NULL;
+    runtime->core_handler = NULL;
+    runtime->extended_handler = NULL;
 
     return HARP_RESULT_OK;
 fail_pages:
@@ -193,16 +194,16 @@ void *harp_alloc_global(HarpRuntime *runtime, size_t size, size_t alignment) {
         &runtime->global_arena, size, alignment);
 }
 
-HarpActorBase *harp_alloc_actor(HarpRuntime *runtime, HarpActorRuntimeDesc *rdesc) {
-    if(runtime == NULL || rdesc == NULL)
+HarpActorBase *harp_alloc_actor(HarpRuntime *runtime, HarpRuntimeActor *ract) {
+    if(runtime == NULL || ract == NULL)
         return NULL;
 
-    void *ptr = hmem_block_alloc_single(&rdesc->inst_block);
+    void *ptr = hmem_block_alloc_single(&ract->inst_block);
     if(ptr != NULL)
         return ptr;
 
-    size_t count = 4 << rdesc->page_growth_index;
-    size_t size = count * rdesc->_base.instance_size;
+    size_t count = 4 << ract->page_growth_index;
+    size_t size = count * ract->descriptor.instance_size;
 
     void *pool = malloc(size);
 
@@ -214,13 +215,13 @@ HarpActorBase *harp_alloc_actor(HarpRuntime *runtime, HarpActorRuntimeDesc *rdes
         .capacity = size
     };
 
-    if(!hmem_book_push(&rdesc->inst_book, &page)) {
+    if(!hmem_book_push(&ract->inst_book, &page)) {
         free(pool);
         return NULL;
     }
 
-    hmem_block_update(&rdesc->inst_block);
+    hmem_block_update(&ract->inst_block);
 
-    ++rdesc->page_growth_index;
-    return hmem_block_alloc_single(&rdesc->inst_block);
+    ++ract->page_growth_index;
+    return hmem_block_alloc_single(&ract->inst_block);
 }

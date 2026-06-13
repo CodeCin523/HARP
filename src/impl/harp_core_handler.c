@@ -1,4 +1,4 @@
-#include "harp_core_api.h"
+#include "harp_core_handler.h"
 #include "runtime/harp_runtime.h"
 #include "utils.h"
 
@@ -15,135 +15,137 @@
 /*  HarpCoreApi's impl                                                              */
 /* ================================================================================ */
 
-HarpResult core_register_api(HarpCoreApi *api, const HarpApiDesc* desc, HarpApiBase** out_api) {
-    if(utils_check_core_api(api) != HARP_RESULT_OK)
+HarpResult handler_register_handler(const HarpCoreHandler *h, const HarpHandlerDesc* desc) {
+    if(utils_check_core_handler(h) != HARP_RESULT_OK)
         return HARP_RESULT_INVALID_ARGUMENTS;
 
-    HarpRuntime *runtime = ((HarpCoreApiImpl *)api)->p_runtime;
-    return runtime_register_api(runtime, desc, out_api);
-}
-HarpResult core_register_handler(HarpCoreApi *api, const HarpHandlerDesc* desc) {
-    if(utils_check_core_api(api) != HARP_RESULT_OK)
-        return HARP_RESULT_INVALID_ARGUMENTS;
-
-    HarpRuntime *runtime = ((HarpCoreApiImpl *)api)->p_runtime;
+    HarpRuntime *runtime = ((HarpCoreHandlerImpl *)h)->p_runtime;
     return runtime_register_handler(runtime, desc);
 }
-HarpResult core_register_actor(HarpCoreApi *api, const HarpActorDesc* desc) {
-    if(utils_check_core_api(api) != HARP_RESULT_OK)
+HarpResult handler_register_actor(const HarpCoreHandler *h, const HarpActorDesc* desc) {
+    if(utils_check_core_handler(h) != HARP_RESULT_OK)
         return HARP_RESULT_INVALID_ARGUMENTS;
 
-    HarpRuntime *runtime = ((HarpCoreApiImpl *)api)->p_runtime;
+    HarpRuntime *runtime = ((HarpCoreHandlerImpl *)h)->p_runtime;
     return runtime_register_actor(runtime, desc);
 }
 
-HarpResult core_get_api(HarpCoreApi *api, const HarpDependencyDesc *dependency, HarpApiBase **out_api) {
-    if(utils_check_core_api(api) != HARP_RESULT_OK)
+HarpResult handler_get_handler(const HarpCoreHandler *h, const HarpDependencyDesc *dependency, HarpHandlerBase** out_handler) {
+    if(utils_check_core_handler(h) != HARP_RESULT_OK)
         return HARP_RESULT_INVALID_ARGUMENTS;
 
-    HarpRuntime *runtime = ((HarpCoreApiImpl *)api)->p_runtime;
-    return runtime_get_api(runtime, dependency, out_api);
-}
-HarpResult core_get_handler(HarpCoreApi *api, const HarpDependencyDesc *dependency, HarpHandlerBase** out_handler) {
-    if(utils_check_core_api(api) != HARP_RESULT_OK)
-        return HARP_RESULT_INVALID_ARGUMENTS;
-
-    HarpRuntime *runtime = ((HarpCoreApiImpl *)api)->p_runtime;
+    HarpRuntime *runtime = ((HarpCoreHandlerImpl *)h)->p_runtime;
     return runtime_get_handler(runtime, dependency, out_handler);
 }
-HarpResult core_get_api_desc(HarpCoreApi *api, const HarpName name, HarpApiDesc **out_desc) {
-    if(utils_check_core_api(api) != HARP_RESULT_OK)
+
+HarpResult handler_get_actor_count(const HarpCoreHandler *h, const HarpName name, uint64_t *out_count) {
+    if(utils_check_core_handler(h) != HARP_RESULT_OK)
         return HARP_RESULT_INVALID_ARGUMENTS;
 
-    HarpRuntime *runtime = ((HarpCoreApiImpl *)api)->p_runtime;
-    return runtime_get_api_desc(runtime, name, out_desc);
+    HarpRuntime *runtime = ((HarpCoreHandlerImpl *)h)->p_runtime;
+    return runtime_get_actor_count(runtime, name, out_count);
 }
-HarpResult core_get_handler_desc(HarpCoreApi *api, const HarpName name, HarpHandlerDesc** out_desc) {
-    if(utils_check_core_api(api) != HARP_RESULT_OK)
+HarpResult handler_get_actor_at(const HarpCoreHandler *h, const HarpName name, uint64_t index, HarpActorBase **out_actor) {
+    if(utils_check_core_handler(h) != HARP_RESULT_OK)
         return HARP_RESULT_INVALID_ARGUMENTS;
 
-    HarpRuntime *runtime = ((HarpCoreApiImpl *)api)->p_runtime;
+    HarpRuntime *runtime = ((HarpCoreHandlerImpl *)h)->p_runtime;
+    return runtime_get_actor_at(runtime, name, index, out_actor);
+}
+HarpResult handler_get_actors(const HarpCoreHandler *h, const HarpName name, uint64_t *inout_count, HarpActorBase **out_actors) {
+    if(utils_check_core_handler(h) != HARP_RESULT_OK)
+        return HARP_RESULT_INVALID_ARGUMENTS;
+
+    HarpRuntime *runtime = ((HarpCoreHandlerImpl *)h)->p_runtime;
+    return runtime_get_actors(runtime, name, inout_count, out_actors);
+}
+
+HarpResult handler_get_handler_desc(const HarpCoreHandler *h, const HarpName name, HarpHandlerDesc** out_desc) {
+    if(utils_check_core_handler(h) != HARP_RESULT_OK)
+        return HARP_RESULT_INVALID_ARGUMENTS;
+
+    HarpRuntime *runtime = ((HarpCoreHandlerImpl *)h)->p_runtime;
     return runtime_get_handler_desc(runtime, name, out_desc);
 }
-HarpResult core_get_actor_desc(HarpCoreApi *api, const HarpName name, HarpActorDesc** out_desc) {
-    if(utils_check_core_api(api) != HARP_RESULT_OK)
+HarpResult handler_get_actor_desc(const HarpCoreHandler *h, const HarpName name, HarpActorDesc** out_desc) {
+    if(utils_check_core_handler(h) != HARP_RESULT_OK)
         return HARP_RESULT_INVALID_ARGUMENTS;
 
-    HarpRuntime *runtime = ((HarpCoreApiImpl *)api)->p_runtime;
+    HarpRuntime *runtime = ((HarpCoreHandlerImpl *)h)->p_runtime;
     return runtime_get_actor_desc(runtime, name, out_desc);
 }
 
-HarpResult core_handler_initialize(HarpCoreApi *api, const HarpName name, const HarpCreatorBase* creator) {
-    if(utils_check_core_api(api) != HARP_RESULT_OK)
+HarpResult handler_handler_initialize(const HarpCoreHandler *h, const HarpName name, const HarpCreatorBase* creator) {
+    if(utils_check_core_handler(h) != HARP_RESULT_OK)
         return HARP_RESULT_INVALID_ARGUMENTS;
 
-    HarpRuntime *runtime = ((HarpCoreApiImpl *)api)->p_runtime;
+    HarpRuntime *runtime = ((HarpCoreHandlerImpl *)h)->p_runtime;
     return runtime_handler_initialize(runtime, name, creator);
 }
-HarpResult core_handler_terminate(HarpCoreApi *api, const HarpName name) {
-    if(utils_check_core_api(api) != HARP_RESULT_OK)
+HarpResult handler_handler_terminate(const HarpCoreHandler *h, const HarpName name) {
+    if(utils_check_core_handler(h) != HARP_RESULT_OK)
         return HARP_RESULT_INVALID_ARGUMENTS;
 
-    HarpRuntime *runtime = ((HarpCoreApiImpl *)api)->p_runtime;
+    HarpRuntime *runtime = ((HarpCoreHandlerImpl *)h)->p_runtime;
     return runtime_handler_terminate(runtime, name);
 }
 
-HarpResult core_actor_create(HarpCoreApi *api, const HarpName name, const HarpCreatorBase* creator, HarpActorBase** out_actor) {
-    if(utils_check_core_api(api) != HARP_RESULT_OK)
+HarpResult handler_actor_create(const HarpCoreHandler *h, const HarpName name, const HarpCreatorBase* creator, HarpActorBase** out_actor) {
+    if(utils_check_core_handler(h) != HARP_RESULT_OK)
         return HARP_RESULT_INVALID_ARGUMENTS;
 
-    HarpRuntime *runtime = ((HarpCoreApiImpl *)api)->p_runtime;
+    HarpRuntime *runtime = ((HarpCoreHandlerImpl *)h)->p_runtime;
     return runtime_actor_create(runtime, name, creator, out_actor);
 }
-HarpResult core_actor_destroy(HarpCoreApi *api, const HarpName name, HarpActorBase* actor) {
-    if(utils_check_core_api(api) != HARP_RESULT_OK)
+HarpResult handler_actor_destroy(const HarpCoreHandler *h, const HarpName name, HarpActorBase* actor) {
+    if(utils_check_core_handler(h) != HARP_RESULT_OK)
         return HARP_RESULT_INVALID_ARGUMENTS;
 
-    HarpRuntime *runtime = ((HarpCoreApiImpl *)api)->p_runtime;
+    HarpRuntime *runtime = ((HarpCoreHandlerImpl *)h)->p_runtime;
     return runtime_actor_destroy(runtime, name, actor);
 }
 
-HarpResult core_get_executable_directory(HarpCoreApi *api, const char **out_path) {
-    if(utils_check_core_api(api) != HARP_RESULT_OK)
+HarpResult handler_get_executable_directory(const HarpCoreHandler *h, const char **out_path) {
+    if(utils_check_core_handler(h) != HARP_RESULT_OK)
         return HARP_RESULT_INVALID_ARGUMENTS;
 
-    HarpRuntime *runtime = ((HarpCoreApiImpl *)api)->p_runtime;
+    HarpRuntime *runtime = ((HarpCoreHandlerImpl *)h)->p_runtime;
     return runtime_get_executable_directory(runtime, out_path);
 }
-HarpResult core_get_working_directory(HarpCoreApi *api, const char **out_path) {
-    if(utils_check_core_api(api) != HARP_RESULT_OK)
+HarpResult handler_get_working_directory(const HarpCoreHandler *h, const char **out_path) {
+    if(utils_check_core_handler(h) != HARP_RESULT_OK)
         return HARP_RESULT_INVALID_ARGUMENTS;
 
-    HarpRuntime *runtime = ((HarpCoreApiImpl *)api)->p_runtime;
+    HarpRuntime *runtime = ((HarpCoreHandlerImpl *)h)->p_runtime;
     return runtime_get_working_directory(runtime, out_path);
 }
-HarpResult core_get_package_directory(HarpCoreApi *api, const HarpName name, const char **out_path) {
-    if(utils_check_core_api(api) != HARP_RESULT_OK)
+HarpResult handler_get_package_directory(const HarpCoreHandler *h, const HarpName name, const char **out_path) {
+    if(utils_check_core_handler(h) != HARP_RESULT_OK)
         return HARP_RESULT_INVALID_ARGUMENTS;
 
-    HarpRuntime *runtime = ((HarpCoreApiImpl *)api)->p_runtime;
+    HarpRuntime *runtime = ((HarpCoreHandlerImpl *)h)->p_runtime;
     return runtime_get_package_directory(runtime, name, out_path);
 }
 
-HarpResult core_get_actor_count(HarpCoreApi *api, const HarpName name, uint64_t *out_count) {
-    if(utils_check_core_api(api) != HARP_RESULT_OK)
+HarpResult core_get_actor_count(const HarpCoreHandler *h, const HarpName name, uint64_t *out_count) {
+    if(utils_check_core_handler(h) != HARP_RESULT_OK)
         return HARP_RESULT_INVALID_ARGUMENTS;
 
-    HarpRuntime *runtime = ((HarpCoreApiImpl *)api)->p_runtime;
+    HarpRuntime *runtime = ((HarpCoreHandlerImpl *)h)->p_runtime;
     return runtime_get_actor_count(runtime, name, out_count);
 }
-HarpResult core_get_actor_at(HarpCoreApi *api, const HarpName name, uint64_t index, HarpActorBase **out_actor) {
-    if(utils_check_core_api(api) != HARP_RESULT_OK)
+HarpResult core_get_actor_at(const HarpCoreHandler *h, const HarpName name, uint64_t index, HarpActorBase **out_actor) {
+    if(utils_check_core_handler(h) != HARP_RESULT_OK)
         return HARP_RESULT_INVALID_ARGUMENTS;
 
-    HarpRuntime *runtime = ((HarpCoreApiImpl *)api)->p_runtime;
+    HarpRuntime *runtime = ((HarpCoreHandlerImpl *)h)->p_runtime;
     return runtime_get_actor_at(runtime, name, index, out_actor);
 }
-HarpResult core_get_actors(HarpCoreApi *api, const HarpName name, uint64_t *inout_count, HarpActorBase **out_actors) {
-    if(utils_check_core_api(api) != HARP_RESULT_OK)
+HarpResult core_get_actors(const HarpCoreHandler *h, const HarpName name, uint64_t *inout_count, HarpActorBase **out_actors) {
+    if(utils_check_core_handler(h) != HARP_RESULT_OK)
         return HARP_RESULT_INVALID_ARGUMENTS;
 
-    HarpRuntime *runtime = ((HarpCoreApiImpl *)api)->p_runtime;
+    HarpRuntime *runtime = ((HarpCoreHandlerImpl *)h)->p_runtime;
     return runtime_get_actors(runtime, name, inout_count, out_actors);
 }
 
@@ -155,79 +157,6 @@ HarpResult core_get_actors(HarpCoreApi *api, const HarpName name, uint64_t *inou
 /*  REGISTRATION                                                                    */
 /* ================================================================================ */
 
-HarpResult runtime_register_api(
-    HarpRuntime *runtime,
-    const HarpApiDesc *desc,
-    HarpApiBase **out_api
-) {
-    if(utils_check_runtime(runtime) != HARP_RESULT_OK || utils_check_api_desc(desc) != HARP_RESULT_OK) 
-        return HARP_RESULT_INVALID_ARGUMENTS;
-
-    if(out_api == NULL)
-        return HARP_RESULT_MISSING_OUTPUT;
-
-    *out_api = NULL;
-
-    // Allocate runtime descriptor
-    HarpApiRuntimeDesc *rdesc =
-        harp_alloc_global(
-            runtime,
-            sizeof(HarpApiRuntimeDesc),
-            alignof(HarpApiRuntimeDesc)
-        );
-
-    if(rdesc == NULL)
-        return HARP_RESULT_OUT_OF_MEMORY;
-
-    memset(rdesc, 0, sizeof(HarpApiRuntimeDesc));
-
-    // Allocate API instance
-    HarpApiBase *rinst =
-        harp_alloc_global(
-            runtime,
-            desc->instance_size,
-            desc->instance_alignment
-        );
-
-    if(rinst == NULL)
-        return HARP_RESULT_OUT_OF_MEMORY;
-
-    memset(rinst, 0, desc->instance_size);
-
-    // Copy descriptor metadata
-    rdesc->_base = *desc;
-
-    // Store name in registry memory
-    HarpName rname =
-        harp_registry_name(&runtime->registry, desc->name);
-
-    if(rname == NULL)
-        return HARP_RESULT_OUT_OF_MEMORY;
-
-    rdesc->_base.name = rname;
-    rdesc->instance = rinst;
-
-    // Initialize API base
-    rinst->version = desc->version;
-    rinst->available = 0;
-
-    // Bind runtime to registry
-    HarpResult res =
-        harp_registry_bind(
-            &runtime->registry,
-            rname,
-            HARP_REGISTRY_ENTRY_TYPE_API,
-            rdesc
-        );
-
-    if(res != HARP_RESULT_OK)
-        return res;
-
-    *out_api = rinst;
-
-    return HARP_RESULT_OK;
-}
-
 HarpResult runtime_register_handler(
     HarpRuntime *runtime,
     const HarpHandlerDesc *desc
@@ -236,17 +165,17 @@ HarpResult runtime_register_handler(
         return HARP_RESULT_INVALID_ARGUMENTS;
 
     // Allocate runtime descriptor
-    HarpHandlerRuntimeDesc *rdesc =
+    HarpRuntimeHandler *rdesc =
         harp_alloc_global(
             runtime,
-            sizeof(HarpHandlerRuntimeDesc),
-            alignof(HarpHandlerRuntimeDesc)
+            sizeof(HarpRuntimeHandler),
+            alignof(HarpRuntimeHandler)
         );
 
     if(rdesc == NULL)
         return HARP_RESULT_OUT_OF_MEMORY;
 
-    memset(rdesc, 0, sizeof(HarpHandlerRuntimeDesc));
+    memset(rdesc, 0, sizeof(HarpRuntimeHandler));
 
     // Allocate handler instance
     HarpHandlerBase *rinst =
@@ -262,7 +191,7 @@ HarpResult runtime_register_handler(
     memset(rinst, 0, desc->instance_size);
 
     // Copy descriptor metadata
-    rdesc->_base = *desc;
+    rdesc->descriptor = *desc;
 
     // Store name in registry memory
     HarpName rname =
@@ -271,7 +200,7 @@ HarpResult runtime_register_handler(
     if(rname == NULL)
         return HARP_RESULT_OUT_OF_MEMORY;
 
-    rdesc->_base.name = rname;
+    rdesc->descriptor.name = rname;
 
     // Copy dependencies into runtime-owned memory
     if(desc->dependency_count > 0 && desc->p_dependencies != NULL) {
@@ -308,16 +237,17 @@ HarpResult runtime_register_handler(
             rdeps[i].name = dep_name;
         }
 
-        rdesc->_base.p_dependencies = rdeps;
+        rdesc->descriptor.p_dependencies = rdeps;
     }
 
     // Initialize runtime state
-    rdesc->state = HARP_RUNTIME_STATE_UNINITIALIZED;
     rdesc->dependent_count = 0;
     rdesc->actor_count = 0;
 
     // Initialize handler base
-    rinst->name = rname;
+    HarpName *name_ptr = (HarpName *) &rinst->name;
+    *name_ptr = rname;
+    rinst->status = 0;
 
     // Save instance inside runtime descriptor
     rdesc->instance = rinst;
@@ -345,20 +275,20 @@ HarpResult runtime_register_actor(
         return HARP_RESULT_INVALID_ARGUMENTS;
 
     // Allocate actor runtime descriptor
-    HarpActorRuntimeDesc *rdesc =
+    HarpRuntimeActor *rdesc =
         harp_alloc_global(
             runtime,
-            sizeof(HarpActorRuntimeDesc),
-            alignof(HarpActorRuntimeDesc)
+            sizeof(HarpRuntimeActor),
+            alignof(HarpRuntimeActor)
         );
 
     if(rdesc == NULL)
         return HARP_RESULT_OUT_OF_MEMORY;
 
-    memset(rdesc, 0, sizeof(HarpActorRuntimeDesc));
+    memset(rdesc, 0, sizeof(HarpRuntimeActor));
 
     // Copy descriptor metadata
-    rdesc->_base = *desc;
+    rdesc->descriptor = *desc;
 
     // Store actor name in registry memory
     HarpName rname =
@@ -367,7 +297,7 @@ HarpResult runtime_register_actor(
     if(rname == NULL)
         return HARP_RESULT_OUT_OF_MEMORY;
 
-    rdesc->_base.name = rname;
+    rdesc->descriptor.name = rname;
     rdesc->page_growth_index = 0;
 
     // Store parent handler name in registry memory
@@ -381,7 +311,7 @@ HarpResult runtime_register_actor(
         if(rparent == NULL)
             return HARP_RESULT_OUT_OF_MEMORY;
 
-        rdesc->_base.parent_handler = rparent;
+        rdesc->descriptor.parent_handler = rparent;
     }
 
     // Setup actor instance storage
@@ -425,39 +355,6 @@ HarpResult runtime_register_actor(
 /*  RETRIEVAL                                                                       */
 /* ================================================================================ */
 
-HarpResult runtime_get_api(
-    HarpRuntime *runtime,
-    const HarpDependencyDesc *dependency,
-    HarpApiBase **out_api
-) {
-    if(utils_check_runtime(runtime) != HARP_RESULT_OK || utils_check_dependency(dependency) != HARP_RESULT_OK) 
-        return HARP_RESULT_INVALID_ARGUMENTS;
-
-    if(out_api == NULL)
-        return HARP_RESULT_MISSING_OUTPUT;
-
-    *out_api = NULL;
-
-    HarpApiRuntimeDesc *rdesc =
-        harp_registry_get(
-            &runtime->registry,
-            dependency->name,
-            HARP_REGISTRY_ENTRY_TYPE_API
-        );
-
-    if(rdesc == NULL)
-        return HARP_RESULT_NAME_NOT_FOUND;
-
-    if(rdesc->instance == NULL)
-        return HARP_RESULT_CRITICAL_FAIL;
-
-    if(utils_dependency_matches(dependency, rdesc->_base.version) != HARP_RESULT_OK)
-        return HARP_RESULT_DEPENDENCY_VERSION_MISMATCH;
-
-    *out_api = rdesc->instance;
-    return HARP_RESULT_OK;
-}
-
 HarpResult runtime_get_handler(
     HarpRuntime *runtime,
     const HarpDependencyDesc *dependency,
@@ -471,7 +368,7 @@ HarpResult runtime_get_handler(
 
     *out_handler = NULL;
 
-    HarpHandlerRuntimeDesc *rdesc =
+    HarpRuntimeHandler *rdesc =
         harp_registry_get(
             &runtime->registry,
             dependency->name,
@@ -484,39 +381,89 @@ HarpResult runtime_get_handler(
     if(rdesc->instance == NULL)
         return HARP_RESULT_CRITICAL_FAIL;
 
-    if(utils_dependency_matches(dependency, rdesc->_base.version) != HARP_RESULT_OK)
+    if(utils_dependency_matches(dependency, rdesc->descriptor.version) != HARP_RESULT_OK)
         return HARP_RESULT_DEPENDENCY_VERSION_MISMATCH;
 
     *out_handler = rdesc->instance;
     return HARP_RESULT_OK;
 }
 
-HarpResult runtime_get_api_desc(
+
+HarpResult runtime_get_actor_count(
     HarpRuntime *runtime,
     const HarpName name,
-    HarpApiDesc **out_desc
+    uint64_t *out_count
 ) {
-    if(utils_check_runtime(runtime) != HARP_RESULT_OK || name == NULL) 
+    if(utils_check_runtime(runtime) != HARP_RESULT_OK || name == NULL)
         return HARP_RESULT_INVALID_ARGUMENTS;
 
-    if(out_desc == NULL)
+    if(out_count == NULL)
         return HARP_RESULT_MISSING_OUTPUT;
 
-    *out_desc = NULL;
-
-    HarpApiRuntimeDesc *rdesc =
-        harp_registry_get(
-            &runtime->registry,
-            name,
-            HARP_REGISTRY_ENTRY_TYPE_API
-        );
-
+    HarpRuntimeActor *rdesc = harp_registry_get(&runtime->registry, name, HARP_REGISTRY_ENTRY_TYPE_ACTOR); 
     if(rdesc == NULL)
         return HARP_RESULT_NAME_NOT_FOUND;
 
-    *out_desc = &rdesc->_base;
+    *out_count = rdesc->actor_count;
     return HARP_RESULT_OK;
 }
+
+HarpResult runtime_get_actor_at(
+    HarpRuntime *runtime,
+    const HarpName name,
+    uint64_t index,
+    HarpActorBase **out_actor
+) {
+    if(utils_check_runtime(runtime) != HARP_RESULT_OK || name == NULL)
+        return HARP_RESULT_INVALID_ARGUMENTS;
+
+    if(out_actor == NULL)
+        return HARP_RESULT_MISSING_OUTPUT;
+
+    HarpRuntimeActor *rdesc = harp_registry_get(&runtime->registry, name, HARP_REGISTRY_ENTRY_TYPE_ACTOR); 
+    if(rdesc == NULL)
+        return HARP_RESULT_NAME_NOT_FOUND;
+
+    if(index >= rdesc->actor_count)
+        return HARP_RESULT_INVALID_ARGUMENTS;
+
+    *out_actor = rdesc->actors[index];
+    return HARP_RESULT_OK;
+}
+
+HarpResult runtime_get_actors(
+    HarpRuntime *runtime,
+    const HarpName name,
+    uint64_t *inout_count,
+    HarpActorBase **out_actors
+) {
+    if(utils_check_runtime(runtime) != HARP_RESULT_OK || name == NULL)
+        return HARP_RESULT_INVALID_ARGUMENTS;
+
+    if(inout_count == NULL)
+        return HARP_RESULT_MISSING_OUTPUT;
+
+    HarpRuntimeActor *rdesc = harp_registry_get(&runtime->registry, name, HARP_REGISTRY_ENTRY_TYPE_ACTOR); 
+    if(rdesc == NULL)
+        return HARP_RESULT_NAME_NOT_FOUND;
+
+    if(out_actors == NULL) {
+        *inout_count = rdesc->actor_count;
+    } else {
+        uint64_t count = *inout_count;
+            
+        if(count > rdesc->actor_count)
+            count = rdesc->actor_count;
+            
+        for(uint64_t i = 0; i < count; ++i)
+            out_actors[i] = rdesc->actors[i];
+            
+        *inout_count = count;
+    }
+
+    return HARP_RESULT_OK;
+}
+
 
 HarpResult runtime_get_handler_desc(
     HarpRuntime *runtime,
@@ -531,7 +478,7 @@ HarpResult runtime_get_handler_desc(
 
     *out_desc = NULL;
 
-    HarpHandlerRuntimeDesc *rdesc =
+    HarpRuntimeHandler *rdesc =
         harp_registry_get(
             &runtime->registry,
             name,
@@ -541,7 +488,7 @@ HarpResult runtime_get_handler_desc(
     if(rdesc == NULL)
         return HARP_RESULT_NAME_NOT_FOUND;
 
-    *out_desc = &rdesc->_base;
+    *out_desc = &rdesc->descriptor;
     return HARP_RESULT_OK;
 }
 
@@ -558,7 +505,7 @@ HarpResult runtime_get_actor_desc(
 
     *out_desc = NULL;
 
-    HarpActorRuntimeDesc *rdesc =
+    HarpRuntimeActor *rdesc =
         harp_registry_get(
             &runtime->registry,
             name,
@@ -568,7 +515,7 @@ HarpResult runtime_get_actor_desc(
     if(rdesc == NULL)
         return HARP_RESULT_NAME_NOT_FOUND;
 
-    *out_desc = &rdesc->_base;
+    *out_desc = &rdesc->descriptor;
     return HARP_RESULT_OK;
 }
 
@@ -586,7 +533,7 @@ HarpResult runtime_handler_initialize(
         return HARP_RESULT_INVALID_ARGUMENTS;
 
     // find handler runtime
-    HarpHandlerRuntimeDesc *rdesc =
+    HarpRuntimeHandler *rdesc =
         harp_registry_get(
             &runtime->registry,
             name,
@@ -596,24 +543,24 @@ HarpResult runtime_handler_initialize(
     if(rdesc == NULL)
         return HARP_RESULT_NAME_NOT_FOUND;
 
-    HarpHandlerDesc *desc = &rdesc->_base;
+    HarpHandlerDesc *desc = &rdesc->descriptor;
     HarpHandlerBase *base = rdesc->instance;
 
     if(base == NULL)
         return HARP_RESULT_CRITICAL_FAIL;
 
     // check state
-    if(rdesc->state == HARP_RUNTIME_STATE_INITIALIZED)
+    if(base->status & HARP_STATUS_FLAG_VALID)
         return HARP_RESULT_OK;
 
-    if(rdesc->state != HARP_RUNTIME_STATE_UNINITIALIZED)
+    if(base->status & (HARP_STATUS_FLAG_INITIALIZING | HARP_STATUS_FLAG_TERMINATING))
         return HARP_RESULT_INVALID_STATE;
 
     // check dependencies
     for(uint64_t i = 0; i < desc->dependency_count; ++i) {
         HarpDependencyDesc *ddep = &desc->p_dependencies[i];
 
-        HarpHandlerRuntimeDesc *drdesc =
+        HarpRuntimeHandler *drdesc =
             harp_registry_get(
                 &runtime->registry,
                 ddep->name,
@@ -623,33 +570,39 @@ HarpResult runtime_handler_initialize(
         if(drdesc == NULL)
             return HARP_RESULT_DEPENDENCY_NOT_FOUND;
 
-        if(utils_dependency_matches(ddep, drdesc->_base.version) != HARP_RESULT_OK)
+        if(utils_dependency_matches(ddep, drdesc->descriptor.version) != HARP_RESULT_OK)
             return HARP_RESULT_DEPENDENCY_VERSION_MISMATCH;
 
-        if(drdesc->state == HARP_RUNTIME_STATE_INITIALIZING)
+        HarpHandlerBase *dbase = drdesc->instance;
+        if(dbase == NULL)
+            return HARP_RESULT_CRITICAL_FAIL;
+
+        if(dbase->status & HARP_STATUS_FLAG_INITIALIZING)
             return HARP_RESULT_DEPENDENCY_CYCLE;
 
-        if(drdesc->state != HARP_RUNTIME_STATE_INITIALIZED)
+        if(!(dbase->status & HARP_STATUS_FLAG_VALID))
             return HARP_RESULT_DEPENDENCY_UNINITIALIZED;
     }
 
     // start initialization
-    rdesc->state = HARP_RUNTIME_STATE_INITIALIZING;
+    base->status |= HARP_STATUS_FLAG_INITIALIZING;
 
     HarpResult res =
         desc->pfn_init(
-            runtime->core_api,
+            runtime->core_handler,
             base,
             (HarpCreatorBase*)creator
         );
 
+    base->status &= ~HARP_STATUS_FLAG_INITIALIZING;
+
     if(res == HARP_RESULT_OK) {
-        rdesc->state = HARP_RUNTIME_STATE_INITIALIZED;
+        base->status |= HARP_STATUS_FLAG_VALID;
 
         for(uint64_t i = 0; i < desc->dependency_count; ++i) {
             HarpDependencyDesc *ddep = &desc->p_dependencies[i];
 
-            HarpHandlerRuntimeDesc *drdesc =
+            HarpRuntimeHandler *drdesc =
                 harp_registry_get(
                     &runtime->registry,
                     ddep->name,
@@ -659,8 +612,6 @@ HarpResult runtime_handler_initialize(
             if(drdesc != NULL)
                 ++drdesc->dependent_count;
         }
-    } else {
-        rdesc->state = HARP_RUNTIME_STATE_UNINITIALIZED;
     }
 
     return res;
@@ -674,7 +625,7 @@ HarpResult runtime_handler_terminate(
         return HARP_RESULT_INVALID_ARGUMENTS;
 
     // find handler runtime
-    HarpHandlerRuntimeDesc *rdesc =
+    HarpRuntimeHandler *rdesc =
         harp_registry_get(
             &runtime->registry,
             name,
@@ -684,17 +635,17 @@ HarpResult runtime_handler_terminate(
     if(rdesc == NULL)
         return HARP_RESULT_NAME_NOT_FOUND;
 
-    HarpHandlerDesc *desc = &rdesc->_base;
+    HarpHandlerDesc *desc = &rdesc->descriptor;
     HarpHandlerBase *base = rdesc->instance;
 
     if(base == NULL)
         return HARP_RESULT_CRITICAL_FAIL;
 
     // check state
-    if(rdesc->state == HARP_RUNTIME_STATE_UNINITIALIZED)
+    if(!(base->status & HARP_STATUS_FLAG_VALID))
         return HARP_RESULT_OK;
 
-    if(rdesc->state != HARP_RUNTIME_STATE_INITIALIZED)
+    if(base->status & (HARP_STATUS_FLAG_INITIALIZING | HARP_STATUS_FLAG_TERMINATING))
         return HARP_RESULT_INVALID_STATE;
 
     // check dependents
@@ -705,21 +656,23 @@ HarpResult runtime_handler_terminate(
         return HARP_RESULT_EXISTENT_ACTORS;
 
     // start termination
-    rdesc->state = HARP_RUNTIME_STATE_TERMINATING;
+    base->status |= HARP_STATUS_FLAG_TERMINATING;
 
     HarpResult res =
         desc->pfn_term(
-            runtime->core_api,
+            runtime->core_handler,
             base
         );
 
+    base->status &= ~HARP_STATUS_FLAG_TERMINATING;
+
     if(res == HARP_RESULT_OK) {
-        rdesc->state = HARP_RUNTIME_STATE_UNINITIALIZED;
+        base->status &= ~HARP_STATUS_FLAG_VALID;
 
         for(uint64_t i = 0; i < desc->dependency_count; ++i) {
             HarpDependencyDesc *ddep = &desc->p_dependencies[i];
 
-            HarpHandlerRuntimeDesc *drdesc =
+            HarpRuntimeHandler *drdesc =
                 harp_registry_get(
                     &runtime->registry,
                     ddep->name,
@@ -729,8 +682,6 @@ HarpResult runtime_handler_terminate(
             if(drdesc != NULL && drdesc->dependent_count > 0)
                 --drdesc->dependent_count;
         }
-    } else {
-        rdesc->state = HARP_RUNTIME_STATE_INITIALIZED;
     }
 
     return res;
@@ -756,7 +707,7 @@ HarpResult runtime_actor_create(
     *out_actor = NULL;
 
     // find actor runtime
-    HarpActorRuntimeDesc *actor_rdesc =
+    HarpRuntimeActor *actor_rdesc =
         harp_registry_get(
             &runtime->registry,
             name,
@@ -766,10 +717,10 @@ HarpResult runtime_actor_create(
     if(actor_rdesc == NULL)
         return HARP_RESULT_NAME_NOT_FOUND;
 
-    HarpActorDesc *actor_desc = &actor_rdesc->_base;
+    HarpActorDesc *actor_desc = &actor_rdesc->descriptor;
 
     // find parent handler runtime
-    HarpHandlerRuntimeDesc *handler_rdesc =
+    HarpRuntimeHandler *handler_rdesc =
         harp_registry_get(
             &runtime->registry,
             actor_desc->parent_handler,
@@ -780,21 +731,22 @@ HarpResult runtime_actor_create(
         return HARP_RESULT_NAME_NOT_FOUND;
 
     HarpHandlerBase *handler_base = handler_rdesc->instance;
-
     if(handler_base == NULL)
         return HARP_RESULT_CRITICAL_FAIL;
 
-    HarpHandlerDesc *handler_desc = &handler_rdesc->_base;
-
     // check handler state
-    if(handler_rdesc->state != HARP_RUNTIME_STATE_INITIALIZED)
+    if(!(handler_base->status & HARP_STATUS_FLAG_VALID))
         return HARP_RESULT_INVALID_STATE;
 
     // check dependencies
+    HarpHandlerDesc *handler_desc = &handler_rdesc->descriptor;
+    if(handler_desc == NULL)
+        return HARP_RESULT_CRITICAL_FAIL;
+
     for(uint64_t i = 0; i < handler_desc->dependency_count; ++i) {
         HarpDependencyDesc *ddep = &handler_desc->p_dependencies[i];
 
-        HarpHandlerRuntimeDesc *drdesc =
+        HarpRuntimeHandler *drdesc =
             harp_registry_get(
                 &runtime->registry,
                 ddep->name,
@@ -804,17 +756,17 @@ HarpResult runtime_actor_create(
         if(drdesc == NULL)
             return HARP_RESULT_DEPENDENCY_NOT_FOUND;
 
-        if(drdesc->_base.version < ddep->min_version)
+        if(utils_dependency_matches(ddep, drdesc->descriptor.version) != HARP_RESULT_OK)
             return HARP_RESULT_DEPENDENCY_VERSION_MISMATCH;
 
-        if(ddep->max_version != 0 &&
-           drdesc->_base.version > ddep->max_version)
-            return HARP_RESULT_DEPENDENCY_VERSION_MISMATCH;
+        HarpHandlerBase *dbase = drdesc->instance;
+        if(dbase == NULL)
+            return HARP_RESULT_CRITICAL_FAIL;
 
-        if(drdesc->state == HARP_RUNTIME_STATE_INITIALIZING)
+        if(dbase->status & HARP_STATUS_FLAG_INITIALIZING)
             return HARP_RESULT_DEPENDENCY_CYCLE;
 
-        if(drdesc->state != HARP_RUNTIME_STATE_INITIALIZED)
+        if(!(dbase->status & HARP_STATUS_FLAG_VALID))
             return HARP_RESULT_DEPENDENCY_UNINITIALIZED;
     }
 
@@ -845,18 +797,23 @@ HarpResult runtime_actor_create(
 
     memset(actor_base, 0, actor_desc->instance_size);
 
-    actor_base->name = actor_desc->name;
-    actor_base->p_handler = handler_base;
+    HarpName *name_ptr = (HarpName *) &actor_base->name;
+    *name_ptr = actor_desc->name;
 
     // create actor
+    actor_base->status |= HARP_STATUS_FLAG_INITIALIZING;
+
     HarpResult res =
         actor_desc->pfn_create(
-            runtime->core_api,
+            runtime->core_handler,
             actor_base,
             (HarpCreatorBase*)creator
         );
 
+    actor_base->status &= ~HARP_STATUS_FLAG_INITIALIZING;
+
     if(res == HARP_RESULT_OK) {
+        actor_base->status |= HARP_STATUS_FLAG_VALID;
         actor_rdesc->actors[actor_rdesc->actor_count++] = actor_base;
 
         *out_actor = actor_base;
@@ -881,7 +838,7 @@ HarpResult runtime_actor_destroy(
         return HARP_RESULT_INVALID_ARGUMENTS;
 
     // find actor runtime
-    HarpActorRuntimeDesc *actor_rdesc =
+    HarpRuntimeActor *actor_rdesc =
         harp_registry_get(
             &runtime->registry,
             name,
@@ -891,10 +848,10 @@ HarpResult runtime_actor_destroy(
     if(actor_rdesc == NULL)
         return HARP_RESULT_NAME_NOT_FOUND;
 
-    HarpActorDesc *actor_desc = &actor_rdesc->_base;
+    HarpActorDesc *actor_desc = &actor_rdesc->descriptor;
 
     // find parent handler runtime
-    HarpHandlerRuntimeDesc *handler_rdesc =
+    HarpRuntimeHandler *handler_rdesc =
         harp_registry_get(
             &runtime->registry,
             actor_desc->parent_handler,
@@ -905,7 +862,8 @@ HarpResult runtime_actor_destroy(
         return HARP_RESULT_NAME_NOT_FOUND;
 
     // check state
-    if(handler_rdesc->state != HARP_RUNTIME_STATE_INITIALIZED)
+    HarpHandlerBase *handler_base = handler_rdesc->instance;
+    if(!(handler_base->status & HARP_STATUS_FLAG_VALID))
         return HARP_RESULT_INVALID_STATE;
 
     // validate actor ownership
@@ -913,13 +871,19 @@ HarpResult runtime_actor_destroy(
         return HARP_RESULT_INVALID_ARGUMENTS;
 
     // destroy actor
+    actor->status |= HARP_STATUS_FLAG_TERMINATING;
+
     HarpResult res =
         actor_desc->pfn_destroy(
-            runtime->core_api,
+            runtime->core_handler,
             actor
         );
 
+    actor->status &= ~HARP_STATUS_FLAG_TERMINATING;
+
     if(res == HARP_RESULT_OK) {
+        actor->status &= ~HARP_STATUS_FLAG_VALID;
+
         /* remove actor from runtime list */
         for(uint64_t i = 0; i < actor_rdesc->actor_count; ++i) {
             if(actor_rdesc->actors[i] == actor) {
@@ -1000,7 +964,7 @@ HarpResult runtime_get_package_directory(
 
     *out_path = NULL;
 
-    HarpPackageRuntimeDesc *rdesc =
+    HarpRuntimePackage *rdesc =
         harp_registry_get(
             &runtime->registry,
             name,
@@ -1014,85 +978,5 @@ HarpResult runtime_get_package_directory(
         return HARP_RESULT_CRITICAL_FAIL;
 
     *out_path = rdesc->directory;
-    return HARP_RESULT_OK;
-}
-
-
-/* ================================================================================ */
-/*  ACTOR ENUMERATION                                                               */
-/* ================================================================================ */
-
-HarpResult runtime_get_actor_count(
-    HarpRuntime *runtime,
-    const HarpName name,
-    uint64_t *out_count
-) {
-    if(utils_check_runtime(runtime) != HARP_RESULT_OK || name == NULL)
-        return HARP_RESULT_INVALID_ARGUMENTS;
-
-    if(out_count == NULL)
-        return HARP_RESULT_MISSING_OUTPUT;
-
-    HarpActorRuntimeDesc *rdesc = harp_registry_get(&runtime->registry, name, HARP_REGISTRY_ENTRY_TYPE_ACTOR); 
-    if(rdesc == NULL)
-        return HARP_RESULT_NAME_NOT_FOUND;
-
-    *out_count = rdesc->actor_count;
-    return HARP_RESULT_OK;
-}
-
-HarpResult runtime_get_actor_at(
-    HarpRuntime *runtime,
-    const HarpName name,
-    uint64_t index,
-    HarpActorBase **out_actor
-) {
-    if(utils_check_runtime(runtime) != HARP_RESULT_OK || name == NULL)
-        return HARP_RESULT_INVALID_ARGUMENTS;
-
-    if(out_actor == NULL)
-        return HARP_RESULT_MISSING_OUTPUT;
-
-    HarpActorRuntimeDesc *rdesc = harp_registry_get(&runtime->registry, name, HARP_REGISTRY_ENTRY_TYPE_ACTOR); 
-    if(rdesc == NULL)
-        return HARP_RESULT_NAME_NOT_FOUND;
-
-    if(index >= rdesc->actor_count)
-        return HARP_RESULT_INVALID_ARGUMENTS;
-
-    *out_actor = rdesc->actors[index];
-    return HARP_RESULT_OK;
-}
-
-HarpResult runtime_get_actors(
-    HarpRuntime *runtime,
-    const HarpName name,
-    uint64_t *inout_count,
-    HarpActorBase **out_actors
-) {
-    if(utils_check_runtime(runtime) != HARP_RESULT_OK || name == NULL)
-        return HARP_RESULT_INVALID_ARGUMENTS;
-
-    if(inout_count == NULL)
-        return HARP_RESULT_MISSING_OUTPUT;
-
-    HarpActorRuntimeDesc *rdesc = harp_registry_get(&runtime->registry, name, HARP_REGISTRY_ENTRY_TYPE_ACTOR); 
-    if(rdesc == NULL)
-        return HARP_RESULT_NAME_NOT_FOUND;
-
-    if(out_actors == NULL) {
-        *inout_count = rdesc->actor_count;
-    } else {
-        uint64_t count = *inout_count;
-            
-        if(count > rdesc->actor_count)
-            count = rdesc->actor_count;
-            
-        for(uint64_t i = 0; i < count; ++i)
-            out_actors[i] = rdesc->actors[i];
-            
-        *inout_count = count;
-    }
-
     return HARP_RESULT_OK;
 }

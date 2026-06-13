@@ -1,5 +1,5 @@
 #include <harp/harp_core.h>
-#include "impl/harp_core_api.h"
+#include "impl/harp_core_handler.h"
 
 #include "runtime/harp_runtime.h"
 #include "runtime/harp_registry.h"
@@ -63,12 +63,24 @@ typedef struct HarpPendingPackage {
 } HarpPendingPackage;
 
 
+static HarpResult init_core_handler(HarpCoreHandler *core_handler, HarpHandlerBase *base, HarpCreatorBase *creator) {
+    return HARP_RESULT_OK;
+}
+static HarpResult term_core_handler(HarpCoreHandler *core_handler, HarpHandlerBase *base) {
+    HarpCoreHandlerImpl *impl = (HarpCoreHandlerImpl *)base;
+    if(impl->p_runtime->core_handler != NULL)
+        return HARP_RESULT_INVALID_STATE;
+
+    return HARP_RESULT_OK;
+}
+
+
 /* ================================================================================ */
 /*  INITIALIZATION                                                                  */
 /* ================================================================================ */
 
 HarpVersion harp_version(void) {
-    return HARP_MAKE_VERSION(1, 0, 3);
+    return HARP_MAKE_VERSION(1, 1, 0);
 }
 
 HarpResult harp_initialize(
@@ -90,56 +102,68 @@ HarpResult harp_initialize(
         goto fail_runtime;
 
     /* register core api */
-    HarpApiDesc core_api_desc = {
-        .name = HARP_CORE_API_NAME,
-        .version = HARP_CORE_API_VERSION,
-        .instance_size = sizeof(HarpCoreApiImpl),
-        .instance_alignment = alignof(HarpCoreApiImpl)
+    HarpHandlerDesc core_handler_desc = {
+        .name = HARP_CORE_HANDLER_NAME,
+        .version = HARP_CORE_HANDLER_VERSION,
+        .instance_size = sizeof(HarpCoreHandlerImpl),
+        .instance_alignment = alignof(HarpCoreHandlerImpl),
+        .pfn_init = init_core_handler,
+        .pfn_term = term_core_handler,
+        .p_dependencies = NULL,
+        .dependency_count = 0
     };
-    HarpApiBase *core_api_base = NULL;
+    HarpHandlerBase *core_handler_base = NULL;
 
-    if(runtime_register_api(
+    if(runtime_register_handler(
         runtime,
-        &core_api_desc,
-        &core_api_base
+        &core_handler_desc
+    ) != HARP_RESULT_OK)
+        goto fail_setup;
+    if(runtime_get_handler(
+        runtime,
+        &(HarpDependencyDesc) {HARP_CORE_HANDLER_NAME, HARP_CORE_HANDLER_VERSION, UINT32_MAX},
+        &core_handler_base
     ) != HARP_RESULT_OK)
         goto fail_setup;
 
-    HarpCoreApiImpl *core_api = (HarpCoreApiImpl *)core_api_base;
-    core_api->p_runtime = runtime;
+    core_handler_base->status = HARP_STATUS_FLAG_AVAILABLE;
+
+    HarpCoreHandlerImpl *core_handler = (HarpCoreHandlerImpl *)core_handler_base;
+    core_handler->p_runtime = runtime;
 
     /* registration */
-    core_api->core_api.register_api = core_register_api;
-    core_api->core_api.register_handler = core_register_handler;
-    core_api->core_api.register_actor = core_register_actor;
+    core_handler->interface.register_handler = handler_register_handler;
+    core_handler->interface.register_actor = handler_register_actor;
 
     /* retrieval */
-    core_api->core_api.get_api = core_get_api;
-    core_api->core_api.get_handler = core_get_handler;
+    core_handler->interface.get_handler = handler_get_handler;
 
-    core_api->core_api.get_api_desc = core_get_api_desc;
-    core_api->core_api.get_handler_desc = core_get_handler_desc;
-    core_api->core_api.get_actor_desc = core_get_actor_desc;
+    core_handler->interface.get_actor_count = handler_get_actor_count;
+    core_handler->interface.get_actor_at = handler_get_actor_at;
+    core_handler->interface.get_actors = handler_get_actors;
+
+    core_handler->interface.get_handler_desc = handler_get_handler_desc;
+    core_handler->interface.get_actor_desc = handler_get_actor_desc;
 
     /* lifecycle */
-    core_api->core_api.handler_initialize = core_handler_initialize;
-    core_api->core_api.handler_terminate = core_handler_terminate;
-    core_api->core_api.actor_create = core_actor_create;
-    core_api->core_api.actor_destroy = core_actor_destroy;
+    core_handler->interface.handler_initialize = handler_handler_initialize;
+    core_handler->interface.handler_terminate = handler_handler_terminate;
+    core_handler->interface.actor_create = handler_actor_create;
+    core_handler->interface.actor_destroy = handler_actor_destroy;
 
     /* paths */
-    core_api->core_api.get_executable_directory = core_get_executable_directory;
-    core_api->core_api.get_working_directory = core_get_working_directory;
-    core_api->core_api.get_package_directory = core_get_package_directory;
+    core_handler->interface.get_executable_directory = handler_get_executable_directory;
+    core_handler->interface.get_working_directory = handler_get_working_directory;
+    core_handler->interface.get_package_directory = handler_get_package_directory;
 
-    /* api enumerate */
-    core_api->core_api.get_actor_count = core_get_actor_count;
-    core_api->core_api.get_actor_at = core_get_actor_at;
-    core_api->core_api.get_actors = core_get_actors;
+    runtime->core_handler = (HarpCoreHandler *)core_handler;
 
-    core_api_base->available = 1;
-
-    runtime->core_api = (HarpCoreApi *)core_api;
+    if(runtime_handler_initialize(
+        runtime,
+        HARP_CORE_HANDLER_NAME,
+        &(HarpCreatorBase) {.kind = 0, .flags = HARP_CREATOR_FLAG_DEFAULT_CREATOR}
+    ) != HARP_RESULT_OK)
+        goto fail_setup;
 
     *out_runtime = runtime;
 
@@ -160,6 +184,13 @@ HarpResult harp_terminate(
     if(runtime == NULL)
         return HARP_RESULT_INVALID_ARGUMENTS;
 
+    HarpCoreHandler *tmp = runtime->core_handler;
+    runtime->core_handler = NULL;
+    if(runtime_handler_terminate(runtime, HARP_CORE_HANDLER_NAME) != HARP_RESULT_OK) {
+        runtime->core_handler = tmp;
+        return HARP_RESULT_INVALID_STATE;
+    }
+
     harp_teardown_runtime(runtime);
 
     free(runtime);
@@ -171,18 +202,6 @@ HarpResult harp_terminate(
 /* ================================================================================ */
 /*  RUNTIME                                                                         */
 /* ================================================================================ */
-
-HarpResult harp_runtime_get_api(
-    HarpRuntime *runtime,
-    const HarpDependencyDesc *dependency,
-    HarpApiBase **out_api
-) {
-    return runtime_get_api(
-        runtime,
-        dependency,
-        out_api
-    );
-}
 
 HarpResult harp_runtime_get_handler(
     HarpRuntime *runtime,
@@ -279,7 +298,7 @@ static HarpResult harp_register_package_recursive(
 
     HarpResult res =
         pkg->desc->pfn_register(
-            runtime->core_api
+            runtime->core_handler
         );
 
     if(res != HARP_RESULT_OK)
@@ -515,11 +534,11 @@ HarpResult harp_runtime_load_packages_from(
 
         /* create runtime desc */
 
-        HarpPackageRuntimeDesc *rdesc =
+        HarpRuntimePackage *rdesc =
             harp_alloc_global(
                 runtime,
-                sizeof(HarpPackageRuntimeDesc),
-                alignof(HarpPackageRuntimeDesc)
+                sizeof(HarpRuntimePackage),
+                alignof(HarpRuntimePackage)
             );
 
         if(rdesc == NULL)
@@ -527,16 +546,16 @@ HarpResult harp_runtime_load_packages_from(
 
         memset(rdesc, 0, sizeof(*rdesc));
 
-        rdesc->_base.name =
+        rdesc->descriptor.name =
             harp_registry_name(
                 &runtime->registry,
                 desc->name
             );
 
-        rdesc->_base.version =
+        rdesc->descriptor.version =
             desc->version;
 
-        rdesc->_base.pfn_register =
+        rdesc->descriptor.pfn_register =
             desc->pfn_register;
 
         /* copy dependencies */
@@ -572,8 +591,8 @@ HarpResult harp_runtime_load_packages_from(
                     );
             }
 
-            rdesc->_base.p_dependencies = deps;
-            rdesc->_base.dependency_count =
+            rdesc->descriptor.p_dependencies = deps;
+            rdesc->descriptor.dependency_count =
                 desc->dependency_count;
         }
 
@@ -605,7 +624,7 @@ HarpResult harp_runtime_load_packages_from(
         HarpResult bind_res =
             harp_registry_bind(
                 &runtime->registry,
-                rdesc->_base.name,
+                rdesc->descriptor.name,
                 HARP_REGISTRY_ENTRY_TYPE_PACKAGE,
                 rdesc
             );

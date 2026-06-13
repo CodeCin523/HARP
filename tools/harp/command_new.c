@@ -115,7 +115,7 @@ static int command_new_package(
     /* --------------------------------------------------------------------- */
 
     snprintf(path, sizeof(path),
-        "%s/src/impl/%s_hello_api.h", name, prefix_lower);
+        "%s/src/impl/%s_hello_handler.h", name, prefix_lower);
     harp_write_template(
         path,
         template_package_impl_api_h,
@@ -123,7 +123,7 @@ static int command_new_package(
     );
 
     snprintf(path, sizeof(path),
-"%s/src/impl/%s_hello_api.c", name, prefix_lower);
+"%s/src/impl/%s_hello_handler.c", name, prefix_lower);
     harp_write_template(
         path,
         template_package_impl_api_c,

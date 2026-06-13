@@ -3,7 +3,6 @@
 
 #include <harp/harp_core.h>
 
-
 int main(int argc, char **argv) {
     printf("=== HARP PATH TEST ===\n");
 
@@ -26,18 +25,19 @@ int main(int argc, char **argv) {
     printf("[OK] runtime initialize\n");
 
     /* ===================================================================== */
-    /* GET CORE API                                                          */
+    /* GET CORE HANDLER (NEW MODEL)                                          */
     /* ===================================================================== */
 
-    HarpApiBase *core_base = NULL;
+    HarpHandlerBase *core_base = NULL;
+
     HarpDependencyDesc dep_desc = {
-        HARP_CORE_API_NAME,
-        0,
-        UINT32_MAX
+        .name = HARP_CORE_HANDLER_NAME,
+        .min_version = 0,
+        .max_version = UINT32_MAX
     };
 
     res =
-        harp_runtime_get_api(
+        harp_runtime_get_handler(
             runtime,
             &dep_desc,
             &core_base
@@ -46,9 +46,9 @@ int main(int argc, char **argv) {
     assert(res == HARP_RESULT_OK);
     assert(core_base != NULL);
 
-    HarpCoreApi *core_api = (HarpCoreApi *)core_base;
+    HarpCoreHandler *core = (HarpCoreHandler *)core_base;
 
-    printf("[OK] get core api\n");
+    printf("[OK] get core handler\n");
 
     /* ===================================================================== */
     /* GET EXECUTABLE DIRECTORY                                              */
@@ -57,8 +57,8 @@ int main(int argc, char **argv) {
     const char *exe_dir = NULL;
 
     res =
-        core_api->get_executable_directory(
-            core_api,
+        core->get_executable_directory(
+            core,
             &exe_dir
         );
 
@@ -75,8 +75,8 @@ int main(int argc, char **argv) {
     const char *work_dir = NULL;
 
     res =
-        core_api->get_working_directory(
-            core_api,
+        core->get_working_directory(
+            core,
             &work_dir
         );
 

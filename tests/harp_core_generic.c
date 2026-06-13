@@ -4,8 +4,6 @@
 #include <stdalign.h>
 
 #include <harp/harp_core.h>
-#include <harp/utils/harp_api.h>
-
 
 /* ================================================================================ */
 /*  TEST OBJECTS                                                                    */
@@ -13,27 +11,24 @@
 
 typedef struct {
     HarpHandlerBase _base;
-
     uint32_t initialized;
 } TestHandler;
 
 typedef struct {
     HarpActorBase _base;
-
     uint32_t created;
 } TestActor;
-
 
 /* ================================================================================ */
 /*  CALLBACKS                                                                       */
 /* ================================================================================ */
 
 static HarpResult test_handler_init(
-    HarpCoreApi *api,
+    HarpCoreHandler *core,
     HarpHandlerBase *handler,
     HarpCreatorBase *creator
 ) {
-    (void)api;
+    (void)core;
     (void)creator;
 
     TestHandler *test = (TestHandler*)handler;
@@ -43,10 +38,10 @@ static HarpResult test_handler_init(
 }
 
 static HarpResult test_handler_term(
-    HarpCoreApi *api,
+    HarpCoreHandler *core,
     HarpHandlerBase *handler
 ) {
-    (void)api;
+    (void)core;
 
     TestHandler *test = (TestHandler*)handler;
     test->initialized = 0;
@@ -55,11 +50,11 @@ static HarpResult test_handler_term(
 }
 
 static HarpResult test_actor_create(
-    HarpCoreApi *api,
+    HarpCoreHandler *core,
     HarpActorBase *actor,
     HarpCreatorBase *creator
 ) {
-    (void)api;
+    (void)core;
     (void)creator;
 
     TestActor *test = (TestActor*)actor;
@@ -69,17 +64,16 @@ static HarpResult test_actor_create(
 }
 
 static HarpResult test_actor_destroy(
-    HarpCoreApi *api,
+    HarpCoreHandler *core,
     HarpActorBase *actor
 ) {
-    (void)api;
+    (void)core;
 
     TestActor *test = (TestActor*)actor;
     test->created = 0;
 
     return HARP_RESULT_OK;
 }
-
 
 /* ================================================================================ */
 /*  MAIN                                                                            */
@@ -93,6 +87,7 @@ int main(int argc, char **argv) {
     /* ------------------------------------------------------------------------ */
 
     HarpRuntime *runtime = NULL;
+
     HarpRuntimeCreator creator = {
         .argv0 = argv[0]
     };
@@ -102,36 +97,28 @@ int main(int argc, char **argv) {
     );
 
     assert(runtime != NULL);
-
     printf("[OK] runtime initialize\n");
 
-
     /* ------------------------------------------------------------------------ */
-    /* Core API                                                                  */
+    /* Core Handler                                                             */
     /* ------------------------------------------------------------------------ */
 
-    HarpApiBase *core_api_base = NULL;
-    HarpDependencyDesc dep_desc = {
-        HARP_CORE_API_NAME,
-        0,
-        UINT32_MAX
+    HarpDependencyDesc dep = {
+        .name = HARP_CORE_HANDLER_NAME,
+        .min_version = 0,
+        .max_version = UINT32_MAX
     };
-
-    HarpResult result = harp_runtime_get_api(
-        runtime,
-        &dep_desc,
-        &core_api_base
+    
+    HarpHandlerBase *base = NULL;
+    
+    assert(
+        harp_runtime_get_handler(runtime, &dep, &base) == HARP_RESULT_OK
     );
+    
+    HarpCoreHandler *core = (HarpCoreHandler *)base;
+    assert(core != NULL);
 
-    assert(result == HARP_RESULT_OK);
-
-    assert(core_api_base != NULL);
-    assert(core_api_base->available == 1);
-
-    HarpCoreApi *core_api = (HarpCoreApi*)core_api_base;
-
-    printf("[OK] get core api\n");
-
+    printf("[OK] get core handler\n");
 
     /* ------------------------------------------------------------------------ */
     /* Register Handler                                                          */
@@ -152,28 +139,25 @@ int main(int argc, char **argv) {
     };
 
     assert(
-        core_api->register_handler(
-            core_api,
-            &handler_desc
-        ) == HARP_RESULT_OK
+        core->register_handler(core, &handler_desc) == HARP_RESULT_OK
     );
 
     printf("[OK] register handler\n");
-
 
     /* ------------------------------------------------------------------------ */
     /* Get Handler                                                               */
     /* ------------------------------------------------------------------------ */
 
+    HarpDependencyDesc dep_desc = {
+        .name = "test_handler",
+        .min_version = 0,
+        .max_version = UINT32_MAX
+    };
+
     HarpHandlerBase *handler_base = NULL;
-    dep_desc.name = "test_handler";
 
     assert(
-        core_api->get_handler(
-            core_api,
-            &dep_desc,
-            &handler_base
-        ) == HARP_RESULT_OK
+        core->get_handler(core, &dep_desc, &handler_base) == HARP_RESULT_OK
     );
 
     assert(handler_base != NULL);
@@ -182,7 +166,6 @@ int main(int argc, char **argv) {
 
     printf("[OK] get handler\n");
 
-
     /* ------------------------------------------------------------------------ */
     /* Get Handler Desc                                                          */
     /* ------------------------------------------------------------------------ */
@@ -190,18 +173,14 @@ int main(int argc, char **argv) {
     HarpHandlerDesc *handler_desc_out = NULL;
 
     assert(
-        core_api->get_handler_desc(
-            core_api,
-            "test_handler",
-            &handler_desc_out
-        ) == HARP_RESULT_OK
+        core->get_handler_desc(core, "test_handler", &handler_desc_out)
+        == HARP_RESULT_OK
     );
 
     assert(handler_desc_out != NULL);
     assert(strcmp(handler_desc_out->name, "test_handler") == 0);
 
     printf("[OK] get handler desc\n");
-
 
     /* ------------------------------------------------------------------------ */
     /* Initialize Handler                                                        */
@@ -210,17 +189,13 @@ int main(int argc, char **argv) {
     HarpCreatorBase handler_creator = {0};
 
     assert(
-        core_api->handler_initialize(
-            core_api,
-            "test_handler",
-            &handler_creator
-        ) == HARP_RESULT_OK
+        core->handler_initialize(core, "test_handler", &handler_creator)
+        == HARP_RESULT_OK
     );
 
     assert(handler->initialized == 1);
 
     printf("[OK] initialize handler\n");
-
 
     /* ------------------------------------------------------------------------ */
     /* Register Actor                                                            */
@@ -240,14 +215,10 @@ int main(int argc, char **argv) {
     };
 
     assert(
-        core_api->register_actor(
-            core_api,
-            &actor_desc
-        ) == HARP_RESULT_OK
+        core->register_actor(core, &actor_desc) == HARP_RESULT_OK
     );
 
     printf("[OK] register actor\n");
-
 
     /* ------------------------------------------------------------------------ */
     /* Get Actor Desc                                                            */
@@ -256,18 +227,14 @@ int main(int argc, char **argv) {
     HarpActorDesc *actor_desc_out = NULL;
 
     assert(
-        core_api->get_actor_desc(
-            core_api,
-            "test_actor",
-            &actor_desc_out
-        ) == HARP_RESULT_OK
+        core->get_actor_desc(core, "test_actor", &actor_desc_out)
+        == HARP_RESULT_OK
     );
 
     assert(actor_desc_out != NULL);
     assert(strcmp(actor_desc_out->name, "test_actor") == 0);
 
     printf("[OK] get actor desc\n");
-
 
     /* ------------------------------------------------------------------------ */
     /* Create Actor                                                              */
@@ -278,22 +245,16 @@ int main(int argc, char **argv) {
     HarpCreatorBase actor_creator = {0};
 
     assert(
-        core_api->actor_create(
-            core_api,
-            "test_actor",
-            &actor_creator,
-            &actor_base
-        ) == HARP_RESULT_OK
+        core->actor_create(core, "test_actor", &actor_creator, &actor_base)
+        == HARP_RESULT_OK
     );
 
     assert(actor_base != NULL);
 
     TestActor *actor = (TestActor*)actor_base;
-
     assert(actor->created == 1);
 
     printf("[OK] create actor\n");
-
 
     /* ------------------------------------------------------------------------ */
     /* Get Actor Count                                                          */
@@ -302,17 +263,13 @@ int main(int argc, char **argv) {
     uint64_t actor_count = 0;
 
     assert(
-        core_api->get_actor_count(
-            core_api,
-            "test_actor",
-            &actor_count
-        ) == HARP_RESULT_OK
+        core->get_actor_count(core, "test_actor", &actor_count)
+        == HARP_RESULT_OK
     );
 
     assert(actor_count == 1);
 
     printf("[OK] get actor count\n");
-
 
     /* ------------------------------------------------------------------------ */
     /* Get Actor At                                                             */
@@ -321,19 +278,14 @@ int main(int argc, char **argv) {
     HarpActorBase *actor_at = NULL;
 
     assert(
-        core_api->get_actor_at(
-            core_api,
-            "test_actor",
-            0,
-            &actor_at
-        ) == HARP_RESULT_OK
+        core->get_actor_at(core, "test_actor", 0, &actor_at)
+        == HARP_RESULT_OK
     );
 
     assert(actor_at == actor_base);
 
     printf("[OK] get actor at\n");
 
-    
     /* ------------------------------------------------------------------------ */
     /* Get Actors                                                               */
     /* ------------------------------------------------------------------------ */
@@ -341,12 +293,8 @@ int main(int argc, char **argv) {
     uint64_t actor_array_count = 0;
 
     assert(
-        core_api->get_actors(
-            core_api,
-            "test_actor",
-            &actor_array_count,
-            NULL
-        ) == HARP_RESULT_OK
+        core->get_actors(core, "test_actor", &actor_array_count, NULL)
+        == HARP_RESULT_OK
     );
 
     assert(actor_array_count == 1);
@@ -354,12 +302,8 @@ int main(int argc, char **argv) {
     HarpActorBase *actors[1] = {0};
 
     assert(
-        core_api->get_actors(
-            core_api,
-            "test_actor",
-            &actor_array_count,
-            actors
-        ) == HARP_RESULT_OK
+        core->get_actors(core, "test_actor", &actor_array_count, actors)
+        == HARP_RESULT_OK
     );
 
     assert(actor_array_count == 1);
@@ -367,37 +311,34 @@ int main(int argc, char **argv) {
 
     printf("[OK] get actors\n");
 
-
     /* ------------------------------------------------------------------------ */
     /* Destroy Actor                                                             */
     /* ------------------------------------------------------------------------ */
 
     assert(
-        core_api->actor_destroy(
-            core_api,
-            "test_actor",
-            actor_base
-        ) == HARP_RESULT_OK
+        core->actor_destroy(core, "test_actor", actor_base)
+        == HARP_RESULT_OK
     );
 
     printf("[OK] destroy actor\n");
-
 
     /* ------------------------------------------------------------------------ */
     /* Terminate Handler                                                         */
     /* ------------------------------------------------------------------------ */
 
     assert(
-        core_api->handler_terminate(
-            core_api,
-            "test_handler"
-        ) == HARP_RESULT_OK
+        core->handler_terminate(core, "test_handler")
+        == HARP_RESULT_OK
     );
+
+    // HarpHandlerBase *handler_base2 = NULL;
+    // core->get_handler(core, &dep_desc, &handler_base2);
+    // printf("handler ptr original: %p\n", (void*)handler);
+    // printf("handler ptr re-fetched: %p\n", (void*)handler_base2);
 
     assert(handler->initialized == 0);
 
     printf("[OK] terminate handler\n");
-
 
     /* ------------------------------------------------------------------------ */
     /* Terminate Runtime                                                         */
@@ -408,7 +349,6 @@ int main(int argc, char **argv) {
     );
 
     printf("[OK] runtime terminate\n");
-
 
     printf("\nALL TESTS PASSED\n");
 
