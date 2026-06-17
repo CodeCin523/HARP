@@ -198,6 +198,78 @@ int main(int argc, char **argv) {
     printf("[OK] initialize handler\n");
 
     /* ------------------------------------------------------------------------ */
+    /* Handler Set Serving                                                       */
+    /* ------------------------------------------------------------------------ */
+
+    // Fresh from initialize, the handler is already VALID + SERVING.
+    // Re-asserting SERVING=1 on an already-serving handler is a no-op
+    // transition and must be rejected.
+    assert(
+        core->handler_set_serving(core, handler_base, 1)
+        == HARP_RESULT_OK
+    );
+
+    // Pausing a serving handler is a legal transition.
+    assert(
+        core->handler_set_serving(core, handler_base, 0)
+        == HARP_RESULT_OK
+    );
+
+    assert((handler_base->status & HARP_STATUS_FLAG_SERVING) == 0);
+
+    // Clearing SERVING again while already cleared must be rejected.
+    assert(
+        core->handler_set_serving(core, handler_base, 0)
+        == HARP_RESULT_INVALID_STATE
+    );
+
+    // Resuming a paused handler is a legal transition.
+    assert(
+        core->handler_set_serving(core, handler_base, 1)
+        == HARP_RESULT_OK
+    );
+
+    assert((handler_base->status & HARP_STATUS_FLAG_SERVING) != 0);
+
+    printf("[OK] handler set serving\n");
+
+    /* ------------------------------------------------------------------------ */
+    /* Handler Set Failed                                                        */
+    /* ------------------------------------------------------------------------ */
+
+    assert((handler_base->status & HARP_STATUS_FLAG_FAILED) == 0);
+
+    // Reporting failure on a healthy handler is a legal transition.
+    assert(
+        core->handler_set_failed(core, handler_base, 1)
+        == HARP_RESULT_OK
+    );
+
+    assert((handler_base->status & HARP_STATUS_FLAG_FAILED) != 0);
+
+    // Re-asserting FAILED=1 on an already-failed handler must be rejected.
+    assert(
+        core->handler_set_failed(core, handler_base, 1)
+        == HARP_RESULT_INVALID_STATE
+    );
+
+    // Clearing FAILED is a legal transition.
+    assert(
+        core->handler_set_failed(core, handler_base, 0)
+        == HARP_RESULT_OK
+    );
+
+    assert((handler_base->status & HARP_STATUS_FLAG_FAILED) == 0);
+
+    // Clearing FAILED again while already clear must be rejected.
+    assert(
+        core->handler_set_failed(core, handler_base, 0)
+        == HARP_RESULT_INVALID_STATE
+    );
+
+    printf("[OK] handler set failed\n");
+
+    /* ------------------------------------------------------------------------ */
     /* Register Actor                                                            */
     /* ------------------------------------------------------------------------ */
 
@@ -255,6 +327,69 @@ int main(int argc, char **argv) {
     assert(actor->created == 1);
 
     printf("[OK] create actor\n");
+
+    /* ------------------------------------------------------------------------ */
+    /* Actor Set Serving                                                        */
+    /* ------------------------------------------------------------------------ */
+
+    // Fresh from create, the actor is already VALID + SERVING.
+    assert(
+        core->actor_set_serving(core, actor_base, 1)
+        == HARP_RESULT_OK
+    );
+
+    assert(
+        core->actor_set_serving(core, actor_base, 0)
+        == HARP_RESULT_OK
+    );
+
+    assert((actor_base->status & HARP_STATUS_FLAG_SERVING) == 0);
+
+    assert(
+        core->actor_set_serving(core, actor_base, 0)
+        == HARP_RESULT_INVALID_STATE
+    );
+
+    assert(
+        core->actor_set_serving(core, actor_base, 1)
+        == HARP_RESULT_OK
+    );
+
+    assert((actor_base->status & HARP_STATUS_FLAG_SERVING) != 0);
+
+    printf("[OK] actor set serving\n");
+
+    /* ------------------------------------------------------------------------ */
+    /* Actor Set Failed                                                         */
+    /* ------------------------------------------------------------------------ */
+
+    assert((actor_base->status & HARP_STATUS_FLAG_FAILED) == 0);
+
+    assert(
+        core->actor_set_failed(core, actor_base, 1)
+        == HARP_RESULT_OK
+    );
+
+    assert((actor_base->status & HARP_STATUS_FLAG_FAILED) != 0);
+
+    assert(
+        core->actor_set_failed(core, actor_base, 1)
+        == HARP_RESULT_INVALID_STATE
+    );
+
+    assert(
+        core->actor_set_failed(core, actor_base, 0)
+        == HARP_RESULT_OK
+    );
+
+    assert((actor_base->status & HARP_STATUS_FLAG_FAILED) == 0);
+
+    assert(
+        core->actor_set_failed(core, actor_base, 0)
+        == HARP_RESULT_INVALID_STATE
+    );
+
+    printf("[OK] actor set failed\n");
 
     /* ------------------------------------------------------------------------ */
     /* Get Actor Count                                                          */

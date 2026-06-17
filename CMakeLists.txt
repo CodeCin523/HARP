@@ -65,6 +65,7 @@ add_library(HARP::Harp ALIAS Harp)
 target_sources(
     Harp PRIVATE
     src/impl/harp_core_handler.c
+    src/impl/harp_extended_handler.c
     src/runtime/harp_registry.c
     src/runtime/harp_runtime.c
     src/harp_core.c

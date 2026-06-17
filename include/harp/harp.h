@@ -54,12 +54,12 @@ enum {
 typedef uint32_t HarpStatusFlags;
 enum {
     HARP_STATUS_FLAG_VALID         = 1 << 0, // the handler instance is initialized and its state is coherent
-    HARP_STATUS_FLAG_AVAILABLE     = 1 << 1, // calls through this handler are currently permitted
+    HARP_STATUS_FLAG_SERVING       = 1 << 1, // calls through this handler are currently permitted
 
     HARP_STATUS_FLAG_INITIALIZING  = 1 << 2, // currently initializing
     HARP_STATUS_FLAG_TERMINATING   = 1 << 3, // currently terminating
 
-    HARP_STATUS_FLAG_FAILED        = 1 << 4, // somehow failed at runtime, not used for now by harp
+    HARP_STATUS_FLAG_FAILED        = 1 << 4, // set by report_failure when a handler encounters an unrecoverable error
 };
 
 typedef struct HarpCreatorBase HarpCreatorBase;
@@ -146,7 +146,7 @@ struct HarpActorBase {
 /* ================================================================================ */
 
 #define HARP_CORE_HANDLER_NAME "HarpCoreHandler"
-#define HARP_CORE_HANDLER_VERSION HARP_MAKE_VERSION(1,0,0)
+#define HARP_CORE_HANDLER_VERSION HARP_MAKE_VERSION(1,1,0)
 
 struct HarpCoreHandler {
     HarpHandlerBase _base;
@@ -176,15 +176,34 @@ struct HarpCoreHandler {
     HarpResult (*get_executable_directory)(const HarpCoreHandler *h, const char **out_path);
     HarpResult (*get_working_directory)(const HarpCoreHandler *h, const char **out_path);
     HarpResult (*get_package_directory)(const HarpCoreHandler *h, const HarpName name, const char **out_path);
+
+    /* Status Switch */
+    // HarpResult (*handler_set_valid)(const HarpCoreHandler *h, HarpHandlerBase *base, uint8_t value);
+    HarpResult (*handler_set_serving)(const HarpCoreHandler *h, HarpHandlerBase *base, uint8_t value);
+    HarpResult (*handler_set_failed)(const HarpCoreHandler *h, HarpHandlerBase *base, uint8_t value);
+
+    // HarpResult (*actor_set_valid)(const HarpCoreHandler *h, HarpActorBase *base, uint8_t value);
+    HarpResult (*actor_set_serving)(const HarpCoreHandler *h, HarpActorBase *base, uint8_t value);
+    HarpResult (*actor_set_failed)(const HarpCoreHandler *h, HarpActorBase *base, uint8_t value);
 };
 
 #define HARP_EXTENDED_HANDLER_NAME "HarpExtendedHandler"
-#define HARP_EXTENDED_HANDLER_VERSION HARP_MAKE_VERSION(0,0,0)
+#define HARP_EXTENDED_HANDLER_VERSION HARP_MAKE_VERSION(1,0,0)
 
 struct HarpExtendedHandler {
     HarpHandlerBase _base;
     
+    /* Time */
+    HarpResult (*get_uptime_s)(const HarpExtendedHandler *h, uint64_t *out_time);
+    HarpResult (*get_uptime_ms)(const HarpExtendedHandler *h, uint64_t *out_time);
+    HarpResult (*get_uptime_ns)(const HarpExtendedHandler *h, uint64_t *out_time);
 
+    /* Thread enrollment */
+    // HarpResult (*thread_enroll)(const HarpExtendedHandler *h);
+    // HarpResult (*thread_withdraw)(const HarpExtendedHandler *h);
+
+    /* Hot-reload synchronization */
+    // HarpResult (*thread_checkpoint)(const HarpExtendedHandler *h);
 };
 
 

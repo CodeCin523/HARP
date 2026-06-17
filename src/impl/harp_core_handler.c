@@ -149,6 +149,73 @@ HarpResult core_get_actors(const HarpCoreHandler *h, const HarpName name, uint64
     return runtime_get_actors(runtime, name, inout_count, out_actors);
 }
 
+HarpResult handler_handler_set_serving(const HarpCoreHandler *h, HarpHandlerBase *base, uint8_t value) {
+    (void)h;
+    if(base->status & HARP_STATUS_FLAG_SERVING) {
+        if(value)
+            return HARP_RESULT_INVALID_STATE;
+
+        base->status &= ~HARP_STATUS_FLAG_SERVING;
+    }else {
+        if(value == 0)
+            return HARP_RESULT_INVALID_STATE;
+
+        base->status |= HARP_STATUS_FLAG_SERVING;
+    }
+
+    return HARP_RESULT_OK;
+}
+HarpResult handler_handler_set_failed(const HarpCoreHandler *h, HarpHandlerBase *base, uint8_t value) {
+    (void)h;
+    if(base->status & HARP_STATUS_FLAG_FAILED) {
+        if(value)
+            return HARP_RESULT_INVALID_STATE;
+
+        base->status &= ~HARP_STATUS_FLAG_FAILED;
+    }else {
+        if(value == 0)
+            return HARP_RESULT_INVALID_STATE;
+
+        base->status |= HARP_STATUS_FLAG_FAILED;
+    }
+
+    return HARP_RESULT_OK;
+}
+
+HarpResult handler_actor_set_serving(const HarpCoreHandler *h, HarpActorBase *base, uint8_t value) {
+    (void)h;
+    if(base->status & HARP_STATUS_FLAG_SERVING) {
+        if(value)
+            return HARP_RESULT_INVALID_STATE;
+
+        base->status &= ~HARP_STATUS_FLAG_SERVING;
+    }else {
+        if(value == 0)
+            return HARP_RESULT_INVALID_STATE;
+
+        base->status |= HARP_STATUS_FLAG_SERVING;
+    }
+
+    return HARP_RESULT_OK;
+}
+HarpResult handler_actor_set_failed(const HarpCoreHandler *h, HarpActorBase *base, uint8_t value) {
+    (void)h;
+    if(base->status & HARP_STATUS_FLAG_FAILED) {
+        if(value)
+            return HARP_RESULT_INVALID_STATE;
+
+        base->status &= ~HARP_STATUS_FLAG_FAILED;
+    }else {
+        if(value == 0)
+            return HARP_RESULT_INVALID_STATE;
+
+        base->status |= HARP_STATUS_FLAG_FAILED;
+    }
+
+    return HARP_RESULT_OK;
+}
+
+
 /* ================================================================================ */
 /*  HarpRuntime's impl                                                              */
 /* ================================================================================ */

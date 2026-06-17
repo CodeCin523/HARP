@@ -1,5 +1,6 @@
 #include <harp/harp_core.h>
 #include "impl/harp_core_handler.h"
+#include "impl/harp_extended_handler.h"
 
 #include "runtime/harp_runtime.h"
 #include "runtime/harp_registry.h"
@@ -101,7 +102,8 @@ HarpResult harp_initialize(
     if(harp_setup_runtime(runtime, runtime_creator) != HARP_RESULT_OK)
         goto fail_runtime;
 
-    /* register core api */
+    
+    /* Core Handler */
     HarpHandlerDesc core_handler_desc = {
         .name = HARP_CORE_HANDLER_NAME,
         .version = HARP_CORE_HANDLER_VERSION,
@@ -114,10 +116,7 @@ HarpResult harp_initialize(
     };
     HarpHandlerBase *core_handler_base = NULL;
 
-    if(runtime_register_handler(
-        runtime,
-        &core_handler_desc
-    ) != HARP_RESULT_OK)
+    if(runtime_register_handler(runtime, &core_handler_desc) != HARP_RESULT_OK)
         goto fail_setup;
     if(runtime_get_handler(
         runtime,
@@ -126,10 +125,9 @@ HarpResult harp_initialize(
     ) != HARP_RESULT_OK)
         goto fail_setup;
 
-    core_handler_base->status = HARP_STATUS_FLAG_AVAILABLE;
-
     HarpCoreHandlerImpl *core_handler = (HarpCoreHandlerImpl *)core_handler_base;
     core_handler->p_runtime = runtime;
+    runtime->core_handler = (HarpCoreHandler *)core_handler;
 
     /* registration */
     core_handler->interface.register_handler = handler_register_handler;
@@ -156,12 +154,62 @@ HarpResult harp_initialize(
     core_handler->interface.get_working_directory = handler_get_working_directory;
     core_handler->interface.get_package_directory = handler_get_package_directory;
 
-    runtime->core_handler = (HarpCoreHandler *)core_handler;
+    /* status switch */
+    core_handler->interface.handler_set_serving = handler_handler_set_serving;
+    core_handler->interface.handler_set_failed = handler_handler_set_failed;
+    core_handler->interface.actor_set_serving = handler_actor_set_serving;
+    core_handler->interface.actor_set_failed = handler_actor_set_failed;
+
+    handler_handler_set_serving(&core_handler->interface, core_handler_base, 1);
 
     if(runtime_handler_initialize(
         runtime,
         HARP_CORE_HANDLER_NAME,
         &(HarpCreatorBase) {.kind = 0, .flags = HARP_CREATOR_FLAG_DEFAULT_CREATOR}
+    ) != HARP_RESULT_OK)
+        goto fail_setup;
+
+
+    /* Extended Handler */
+    HarpHandlerDesc extended_handler_desc = {
+        .name = HARP_EXTENDED_HANDLER_NAME,
+        .version = HARP_EXTENDED_HANDLER_VERSION,
+        .instance_size = sizeof(HarpExtendedHandlerImpl),
+        .instance_alignment = alignof(HarpExtendedHandlerImpl),
+        .pfn_init = init_extended,
+        .pfn_term = term_extended,
+        .p_dependencies = NULL,
+        .dependency_count = 0
+    };
+
+    HarpHandlerBase *extended_handler_base = NULL;
+
+    if(runtime_register_handler(runtime, &extended_handler_desc) != HARP_RESULT_OK)
+        goto fail_setup;
+
+    if(runtime_get_handler(
+        runtime,
+        &(HarpDependencyDesc){HARP_EXTENDED_HANDLER_NAME, HARP_EXTENDED_HANDLER_VERSION, UINT32_MAX},
+        &extended_handler_base
+    ) != HARP_RESULT_OK)
+        goto fail_setup;
+    HarpExtendedHandlerImpl *extended_handler = (HarpExtendedHandlerImpl *)extended_handler_base;
+    runtime->extended_handler = (HarpExtendedHandler *)extended_handler;
+
+    /* setup interface */
+    extended_handler->interface.get_uptime_s = extended_get_uptime_s;
+    extended_handler->interface.get_uptime_ms = extended_get_uptime_ms;
+    extended_handler->interface.get_uptime_ns = extended_get_uptime_ns;
+
+    handler_handler_set_serving(&core_handler->interface, extended_handler_base, 1);
+
+    if(runtime_handler_initialize(
+        runtime,
+        HARP_EXTENDED_HANDLER_NAME,
+        &(HarpCreatorBase){
+            .kind = 0,
+            .flags = HARP_CREATOR_FLAG_DEFAULT_CREATOR
+        }
     ) != HARP_RESULT_OK)
         goto fail_setup;
 

@@ -1,7 +1,7 @@
 #ifndef HARP_CORE_HANDLER_H
 #define HARP_CORE_HANDLER_H
 
-#include <harp/harp_core.h>
+#include <harp/harp.h>
 
 
 typedef struct HarpCoreHandlerImpl {
@@ -32,6 +32,12 @@ HarpResult handler_actor_destroy(const HarpCoreHandler *h, const HarpName name, 
 HarpResult handler_get_executable_directory(const HarpCoreHandler *h, const char **out_path);
 HarpResult handler_get_working_directory(const HarpCoreHandler *h, const char **out_path);
 HarpResult handler_get_package_directory(const HarpCoreHandler *h, const HarpName name, const char **out_path);
+
+HarpResult handler_handler_set_serving(const HarpCoreHandler *h, HarpHandlerBase *base, uint8_t value);
+HarpResult handler_handler_set_failed(const HarpCoreHandler *h, HarpHandlerBase *base, uint8_t value);
+
+HarpResult handler_actor_set_serving(const HarpCoreHandler *h, HarpActorBase *base, uint8_t value);
+HarpResult handler_actor_set_failed(const HarpCoreHandler *h, HarpActorBase *base, uint8_t value);
 
 
 // HarpRuntime's impl
