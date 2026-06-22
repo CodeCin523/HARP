@@ -197,13 +197,6 @@ struct HarpExtendedHandler {
     HarpResult (*get_uptime_s)(const HarpExtendedHandler *h, uint64_t *out_time);
     HarpResult (*get_uptime_ms)(const HarpExtendedHandler *h, uint64_t *out_time);
     HarpResult (*get_uptime_ns)(const HarpExtendedHandler *h, uint64_t *out_time);
-
-    /* Thread enrollment */
-    // HarpResult (*thread_enroll)(const HarpExtendedHandler *h);
-    // HarpResult (*thread_withdraw)(const HarpExtendedHandler *h);
-
-    /* Hot-reload synchronization */
-    // HarpResult (*thread_checkpoint)(const HarpExtendedHandler *h);
 };
 
 
