@@ -215,7 +215,7 @@ static int command_new_application(
         "%s/tests", name);
     harp_mkdir(path);
 
-    snprintf(path,sizeof(path),
+    snprintf(path, sizeof(path),
         "%s/CMakeLists.txt", name);
     harp_write_template(
         path,
@@ -223,11 +223,27 @@ static int command_new_application(
         arguments
     );
 
-    snprintf(path,sizeof(path),
+    snprintf(path, sizeof(path),
         "%s/src/main.c", name);
     harp_write_template(
         path,
         template_application_main_c,
+        arguments
+    );
+
+    snprintf(path, sizeof(path),
+        "%s/tests/CMakeLists.txt", name);
+    harp_write_template(
+        path,
+        template_application_tests_cmakelists,
+        arguments
+    );
+
+    snprintf(path, sizeof(path),
+        "%s/.gitignore", name);
+    harp_write_template(
+        path,
+        template_gitignore,
         arguments
     );
 

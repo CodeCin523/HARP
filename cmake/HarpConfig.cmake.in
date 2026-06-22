@@ -2,3 +2,57 @@
 
 include("${CMAKE_CURRENT_LIST_DIR}/HarpTargets.cmake")
 check_required_components("@PROJECT_NAME@")
+
+
+# ------------------------------------------------------------------------------
+# harp_package
+#
+# Configures build-time output and install rules for a HARP package target.
+#
+# Usage:
+#   harp_package(TARGET <target> [SUBDIRECTORY])
+#
+# Options:
+#   TARGET <target>  The CMake shared library target for the package.
+#   SUBDIRECTORY     Place the .so inside packages/<target>/ instead of
+#                    directly in packages/. Use this when the package has
+#                    assets or other files alongside the library.
+#
+# The output directory during build is taken from HARP_PACKAGES_DIR. If that
+# variable is not set, it defaults to ${CMAKE_BINARY_DIR}/packages.
+# ------------------------------------------------------------------------------
+function(harp_package)
+    cmake_parse_arguments(ARG "SUBDIRECTORY" "TARGET" "" ${ARGN})
+
+    if(NOT ARG_TARGET)
+        message(FATAL_ERROR "harp_package: TARGET is required")
+    endif()
+
+    if(NOT DEFINED HARP_PACKAGES_DIR)
+        set(HARP_PACKAGES_DIR "${CMAKE_BINARY_DIR}/packages")
+    endif()
+
+    if(ARG_SUBDIRECTORY)
+        set_target_properties(${ARG_TARGET} PROPERTIES
+            LIBRARY_OUTPUT_DIRECTORY "${HARP_PACKAGES_DIR}/${ARG_TARGET}"
+            RUNTIME_OUTPUT_DIRECTORY "${HARP_PACKAGES_DIR}/${ARG_TARGET}"
+            PREFIX ""
+        )
+        install(
+            TARGETS ${ARG_TARGET}
+            LIBRARY DESTINATION "packages/${ARG_TARGET}"
+            RUNTIME DESTINATION "packages/${ARG_TARGET}"
+        )
+    else()
+        set_target_properties(${ARG_TARGET} PROPERTIES
+            LIBRARY_OUTPUT_DIRECTORY "${HARP_PACKAGES_DIR}"
+            RUNTIME_OUTPUT_DIRECTORY "${HARP_PACKAGES_DIR}"
+            PREFIX ""
+        )
+        install(
+            TARGETS ${ARG_TARGET}
+            LIBRARY DESTINATION "packages"
+            RUNTIME DESTINATION "packages"
+        )
+    endif()
+endfunction()

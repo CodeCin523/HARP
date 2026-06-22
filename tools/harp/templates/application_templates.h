@@ -3,5 +3,6 @@
 
 extern const char *template_application_cmakelists;
 extern const char *template_application_main_c;
+extern const char *template_application_tests_cmakelists;
 
 #endif
