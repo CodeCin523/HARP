@@ -131,7 +131,6 @@ HarpResult harp_setup_runtime(HarpRuntime *runtime, HarpRuntimeCreator *creator)
         goto fail_pages;
 
     runtime->core_handler = NULL;
-    runtime->extended_handler = NULL;
 
     return HARP_RESULT_OK;
 fail_pages:

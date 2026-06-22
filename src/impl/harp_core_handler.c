@@ -217,6 +217,85 @@ HarpResult handler_actor_set_failed(const HarpCoreHandler *h, HarpActorBase *bas
 
 
 /* ================================================================================ */
+/*  TIME                                                                            */
+/* ================================================================================ */
+
+#if HARP_PLATFORM_WINDOWS
+
+HarpResult handler_get_uptime_s(const HarpCoreHandler *h, uint64_t *out_time) {
+    if(h == NULL || out_time == NULL)
+        return HARP_RESULT_INVALID_ARGUMENTS;
+
+    HarpCoreHandlerImpl *impl = (HarpCoreHandlerImpl *)h;
+    LARGE_INTEGER now;
+    QueryPerformanceCounter(&now);
+    *out_time = (uint64_t)(now.QuadPart - impl->start_time.QuadPart) / (uint64_t)impl->frequency.QuadPart;
+    return HARP_RESULT_OK;
+}
+HarpResult handler_get_uptime_ms(const HarpCoreHandler *h, uint64_t *out_time) {
+    if(h == NULL || out_time == NULL)
+        return HARP_RESULT_INVALID_ARGUMENTS;
+
+    HarpCoreHandlerImpl *impl = (HarpCoreHandlerImpl *)h;
+    LARGE_INTEGER now;
+    QueryPerformanceCounter(&now);
+    *out_time = ((uint64_t)(now.QuadPart - impl->start_time.QuadPart) * 1000ULL) / (uint64_t)impl->frequency.QuadPart;
+    return HARP_RESULT_OK;
+}
+HarpResult handler_get_uptime_ns(const HarpCoreHandler *h, uint64_t *out_time) {
+    if(h == NULL || out_time == NULL)
+        return HARP_RESULT_INVALID_ARGUMENTS;
+
+    HarpCoreHandlerImpl *impl = (HarpCoreHandlerImpl *)h;
+    LARGE_INTEGER now;
+    QueryPerformanceCounter(&now);
+    *out_time = ((uint64_t)(now.QuadPart - impl->start_time.QuadPart) * 1000000000ULL) / (uint64_t)impl->frequency.QuadPart;
+    return HARP_RESULT_OK;
+}
+
+#elif HARP_PLATFORM_LINUX
+
+HarpResult handler_get_uptime_s(const HarpCoreHandler *h, uint64_t *out_time) {
+    if(h == NULL || out_time == NULL)
+        return HARP_RESULT_INVALID_ARGUMENTS;
+
+    HarpCoreHandlerImpl *impl = (HarpCoreHandlerImpl *)h;
+    struct timespec now;
+    clock_gettime(CLOCK_MONOTONIC, &now);
+    uint64_t now_ns = (uint64_t)now.tv_sec * 1000000000ULL + (uint64_t)now.tv_nsec;
+    uint64_t start_ns = (uint64_t)impl->start_time.tv_sec * 1000000000ULL + (uint64_t)impl->start_time.tv_nsec;
+    *out_time = (now_ns - start_ns) / 1000000000ULL;
+    return HARP_RESULT_OK;
+}
+HarpResult handler_get_uptime_ms(const HarpCoreHandler *h, uint64_t *out_time) {
+    if(h == NULL || out_time == NULL)
+        return HARP_RESULT_INVALID_ARGUMENTS;
+
+    HarpCoreHandlerImpl *impl = (HarpCoreHandlerImpl *)h;
+    struct timespec now;
+    clock_gettime(CLOCK_MONOTONIC, &now);
+    uint64_t now_ns = (uint64_t)now.tv_sec * 1000000000ULL + (uint64_t)now.tv_nsec;
+    uint64_t start_ns = (uint64_t)impl->start_time.tv_sec * 1000000000ULL + (uint64_t)impl->start_time.tv_nsec;
+    *out_time = (now_ns - start_ns) / 1000000ULL;
+    return HARP_RESULT_OK;
+}
+HarpResult handler_get_uptime_ns(const HarpCoreHandler *h, uint64_t *out_time) {
+    if(h == NULL || out_time == NULL)
+        return HARP_RESULT_INVALID_ARGUMENTS;
+
+    HarpCoreHandlerImpl *impl = (HarpCoreHandlerImpl *)h;
+    struct timespec now;
+    clock_gettime(CLOCK_MONOTONIC, &now);
+    uint64_t now_ns = (uint64_t)now.tv_sec * 1000000000ULL + (uint64_t)now.tv_nsec;
+    uint64_t start_ns = (uint64_t)impl->start_time.tv_sec * 1000000000ULL + (uint64_t)impl->start_time.tv_nsec;
+    *out_time = now_ns - start_ns;
+    return HARP_RESULT_OK;
+}
+
+#endif
+
+
+/* ================================================================================ */
 /*  HarpRuntime's impl                                                              */
 /* ================================================================================ */
 

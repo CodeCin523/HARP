@@ -44,7 +44,6 @@ struct HarpRuntime {
     HarpRegistry registry;
 
     HarpCoreHandler *core_handler;
-    HarpExtendedHandler *extended_handler;
 
     char *executable_directory;
     char *working_directory;

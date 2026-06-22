@@ -67,7 +67,6 @@ typedef struct HarpHandlerBase HarpHandlerBase;
 typedef struct HarpActorBase HarpActorBase;
 
 typedef struct HarpCoreHandler HarpCoreHandler;
-typedef struct HarpExtendedHandler HarpExtendedHandler;
 
 typedef struct HarpRuntime HarpRuntime;
 
@@ -146,7 +145,7 @@ struct HarpActorBase {
 /* ================================================================================ */
 
 #define HARP_CORE_HANDLER_NAME "HarpCoreHandler"
-#define HARP_CORE_HANDLER_VERSION HARP_MAKE_VERSION(1,1,0)
+#define HARP_CORE_HANDLER_VERSION HARP_MAKE_VERSION(1,2,0)
 
 struct HarpCoreHandler {
     HarpHandlerBase _base;
@@ -185,18 +184,11 @@ struct HarpCoreHandler {
     // HarpResult (*actor_set_valid)(const HarpCoreHandler *h, HarpActorBase *base, uint8_t value);
     HarpResult (*actor_set_serving)(const HarpCoreHandler *h, HarpActorBase *base, uint8_t value);
     HarpResult (*actor_set_failed)(const HarpCoreHandler *h, HarpActorBase *base, uint8_t value);
-};
 
-#define HARP_EXTENDED_HANDLER_NAME "HarpExtendedHandler"
-#define HARP_EXTENDED_HANDLER_VERSION HARP_MAKE_VERSION(1,0,0)
-
-struct HarpExtendedHandler {
-    HarpHandlerBase _base;
-    
     /* Time */
-    HarpResult (*get_uptime_s)(const HarpExtendedHandler *h, uint64_t *out_time);
-    HarpResult (*get_uptime_ms)(const HarpExtendedHandler *h, uint64_t *out_time);
-    HarpResult (*get_uptime_ns)(const HarpExtendedHandler *h, uint64_t *out_time);
+    HarpResult (*get_uptime_s)(const HarpCoreHandler *h, uint64_t *out_time);
+    HarpResult (*get_uptime_ms)(const HarpCoreHandler *h, uint64_t *out_time);
+    HarpResult (*get_uptime_ns)(const HarpCoreHandler *h, uint64_t *out_time);
 };
 
 

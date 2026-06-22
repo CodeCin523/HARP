@@ -2,11 +2,25 @@
 #define HARP_CORE_HANDLER_H
 
 #include <harp/harp.h>
+#include <harp/utils/harp_platform.h>
+
+#if HARP_PLATFORM_WINDOWS
+#include <windows.h>
+#elif HARP_PLATFORM_LINUX
+#include <time.h>
+#endif
 
 
 typedef struct HarpCoreHandlerImpl {
     HarpCoreHandler interface;
     HarpRuntime *p_runtime;
+
+#if HARP_PLATFORM_WINDOWS
+    LARGE_INTEGER start_time;
+    LARGE_INTEGER frequency;
+#elif HARP_PLATFORM_LINUX
+    struct timespec start_time;
+#endif
 } HarpCoreHandlerImpl;
 
 
@@ -38,6 +52,10 @@ HarpResult handler_handler_set_failed(const HarpCoreHandler *h, HarpHandlerBase 
 
 HarpResult handler_actor_set_serving(const HarpCoreHandler *h, HarpActorBase *base, uint8_t value);
 HarpResult handler_actor_set_failed(const HarpCoreHandler *h, HarpActorBase *base, uint8_t value);
+
+HarpResult handler_get_uptime_s(const HarpCoreHandler *h, uint64_t *out_time);
+HarpResult handler_get_uptime_ms(const HarpCoreHandler *h, uint64_t *out_time);
+HarpResult handler_get_uptime_ns(const HarpCoreHandler *h, uint64_t *out_time);
 
 
 // HarpRuntime's impl
