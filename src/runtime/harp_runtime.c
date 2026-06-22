@@ -102,6 +102,7 @@ HarpResult harp_setup_runtime(HarpRuntime *runtime, HarpRuntimeCreator *creator)
 
     // registry
     harp_setup_registry(&runtime->registry);
+    harp_setup_package_manager(&runtime->package_manager);
 
     // Descriptor setup
     runtime->page_size =
@@ -150,6 +151,8 @@ fail_registry:
 }
 void harp_teardown_runtime(HarpRuntime *runtime) {
     if (!runtime) return;
+
+    harp_teardown_package_manager(&runtime->package_manager);
 
     hmem_teardown_arena(&runtime->global_arena);
 

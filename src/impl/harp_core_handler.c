@@ -1110,19 +1110,14 @@ HarpResult runtime_get_package_directory(
 
     *out_path = NULL;
 
-    HarpRuntimePackage *rdesc =
-        harp_registry_get(
-            &runtime->registry,
-            name,
-            HARP_REGISTRY_ENTRY_TYPE_PACKAGE
-        );
+    HarpLoadedPackage *pkg = harp_package_manager_get(&runtime->package_manager, name);
 
-    if(rdesc == NULL)
+    if(pkg == NULL)
         return HARP_RESULT_NAME_NOT_FOUND;
 
-    if(rdesc->directory == NULL)
+    if(pkg->directory == NULL)
         return HARP_RESULT_CRITICAL_FAIL;
 
-    *out_path = rdesc->directory;
+    *out_path = pkg->directory;
     return HARP_RESULT_OK;
 }

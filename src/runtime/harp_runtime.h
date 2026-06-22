@@ -3,22 +3,17 @@
 
 #include <harp/harp.h>
 #include "harp_registry.h"
+#include "harp_package.h"
 
 #include <hmem/hmem_arena.h>
 #include <hmem/hmem_block.h>
 #include <hmem/hmem_book.h>
 
 
-typedef struct HarpRuntimePackage HarpRuntimePackage;
 typedef struct HarpRuntimeHandler HarpRuntimeHandler;
 typedef struct HarpRuntimeActor HarpRuntimeActor;
 
 
-struct HarpRuntimePackage {
-    HarpPackageDesc descriptor;
-
-    char *directory;
-};
 struct HarpRuntimeHandler {
     HarpHandlerDesc descriptor;
     HarpHandlerBase *instance;
@@ -42,6 +37,7 @@ struct HarpRuntime {
     HarpHandlerBase _base;
 
     HarpRegistry registry;
+    HarpPackageManager package_manager;
 
     HarpCoreHandler *core_handler;
 
