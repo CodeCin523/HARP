@@ -2,7 +2,6 @@
 #include "impl/harp_core_handler.h"
 
 #include "runtime/harp_runtime.h"
-#include "runtime/harp_registry.h"
 
 #define HMEM_IMPLEMENTATION
 #include <hmem/hmem_arena.h>
@@ -22,7 +21,6 @@
 #endif
 
 #include <stdlib.h>
-#include <string.h>
 #include <stdio.h>
 
 
@@ -55,7 +53,7 @@ static HarpResult term_core_handler(HarpCoreHandler *core_handler, HarpHandlerBa
 /* ================================================================================ */
 
 HarpVersion harp_version(void) {
-    return HARP_MAKE_VERSION(1, 2, 0);
+    return HARP_MAKE_VERSION(1, 2, 1);
 }
 
 HarpResult harp_initialize(

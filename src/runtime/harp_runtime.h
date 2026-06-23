@@ -25,7 +25,7 @@ struct HarpRuntimeActor {
     HarpActorDesc descriptor;
     hmem_book_t inst_book;
     hmem_block_t inst_block; // memory leaks
-    
+
     uint32_t page_growth_index;
 
     uint64_t actor_count;
