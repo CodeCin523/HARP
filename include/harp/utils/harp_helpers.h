@@ -113,9 +113,9 @@ extern "C" {
 /*  HELPERS                                                                         */
 /* ================================================================================ */
 
-#define HARP_DEPENDENCY(name, min_ver, max_ver) \
+#define HARP_DEPENDENCY(dep_name, min_ver, max_ver) \
     (HarpDependencyDesc){ \
-        .name = (name), \
+        .name = (dep_name), \
         .min_version = (min_ver), \
         .max_version = (max_ver) \
     }
