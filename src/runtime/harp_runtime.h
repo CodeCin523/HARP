@@ -56,6 +56,10 @@ void harp_teardown_runtime(HarpRuntime *runtime);
 
 void *harp_alloc_global(HarpRuntime *runtime, size_t size, size_t alignment);
 
+
+HarpResult harp_setup_runtime_actor(HarpRuntimeActor *actor, uint64_t instance_size, uint64_t instance_alignment);
+void harp_teardown_runtime_actor(HarpRuntimeActor *actor);
+
 HarpActorBase *harp_alloc_actor(HarpRuntime *runtime, HarpRuntimeActor *ract);
 
 

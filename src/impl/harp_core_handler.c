@@ -461,18 +461,8 @@ HarpResult runtime_register_actor(
     }
 
     // Setup actor instance storage
-    if(!hmem_setup_book(&rdesc->inst_book, 16))
+    if(harp_setup_runtime_actor(rdesc, desc->instance_size, desc->instance_alignment) != HARP_RESULT_OK)
         return HARP_RESULT_FAILED;
-
-    if(!hmem_setup_block(
-        &rdesc->inst_block,
-        &rdesc->inst_book,
-        desc->instance_size,
-        desc->instance_alignment
-    )) {
-        hmem_teardown_book(&rdesc->inst_book);
-        return HARP_RESULT_FAILED;
-    }
 
     // Bind runtime to registry
     HarpResult res =

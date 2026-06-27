@@ -196,6 +196,35 @@ void *harp_alloc_global(HarpRuntime *runtime, size_t size, size_t alignment) {
         &runtime->global_arena, size, alignment);
 }
 
+
+HarpResult harp_setup_runtime_actor(HarpRuntimeActor *actor, uint64_t instance_size, uint64_t instance_alignment) {
+    if(!hmem_setup_book(&actor->inst_book, 16))
+        return HARP_RESULT_FAILED;
+
+    if(!hmem_setup_block(
+        &actor->inst_block,
+        &actor->inst_book,
+        instance_size,
+        instance_alignment
+    )) {
+        hmem_teardown_book(&actor->inst_book);
+        return HARP_RESULT_FAILED;
+    }
+
+    return HARP_RESULT_OK;
+}
+void harp_teardown_runtime_actor(HarpRuntimeActor *actor) {
+    hmem_teardown_block(&actor->inst_block);
+
+    hmem_page_t page;
+    while (hmem_book_pop(&actor->inst_book, &page)) {
+        free(page.pool);
+        hmem_teardown_page(&page);
+    }
+
+    hmem_teardown_book(&actor->inst_book);
+}
+
 HarpActorBase *harp_alloc_actor(HarpRuntime *runtime, HarpRuntimeActor *ract) {
     if(runtime == NULL || ract == NULL)
         return NULL;
