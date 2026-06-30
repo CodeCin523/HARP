@@ -45,7 +45,7 @@ set_target_properties(
 
 target_compile_features(
     HarpInterface INTERFACE
-    c_std_23
+    c_std_11
 )
 
 
@@ -86,7 +86,7 @@ target_link_libraries(
 
 target_compile_features(
     Harp PUBLIC
-    c_std_23
+    c_std_11
 )
 
 
