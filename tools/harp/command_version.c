@@ -7,7 +7,7 @@ int command_version(void) {
     HarpVersion version = harp_version();
 
     printf(
-        "HARP Tool v1.0.2\n"
+        "HARP Tool v1.0.3\n"
         "HARP Library v%u.%u.%u\n"
         "HARP Core Handler v%u.%u.%u\n",
         HARP_VERSION_MAJOR(version),

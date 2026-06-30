@@ -29,7 +29,7 @@
 /* ================================================================================ */
 
 HarpVersion harp_version(void) {
-    return HARP_MAKE_VERSION(1, 2, 1);
+    return HARP_MAKE_VERSION(1, 3, 0);
 }
 
 HarpResult harp_initialize(
