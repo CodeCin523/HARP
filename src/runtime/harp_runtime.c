@@ -126,6 +126,17 @@ fail_registry:
 void harp_teardown_runtime(HarpRuntime *runtime) {
     HARP_CHECK_CRITICAL(runtime != NULL);
 
+    for(uint32_t b = 0; b < HARP_REGISTRY_BUCKET_COUNT; ++b) {
+        HarpRegistryBucket *bucket = &runtime->registry.buckets[b];
+        for(uint32_t e = 0; e < bucket->count; ++e) {
+            HarpRegistryEntry *entry = &bucket->entries[e];
+            if(entry->type == HARP_REGISTRY_ENTRY_TYPE_ACTOR)
+                harp_teardown_ract((HarpRuntimeActor *)entry->runtime);
+            else if(entry->type == HARP_REGISTRY_ENTRY_TYPE_HANDLER)
+                harp_teardown_rhdl((HarpRuntimeHandler *)entry->runtime);
+        }
+    }
+
     harp_teardown_package_manager(&runtime->package_manager);
 
     hmem_teardown_arena(&runtime->global_arena);
