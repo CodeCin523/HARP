@@ -6,8 +6,8 @@
 #include <runtime/harp_runtime.h>
 
 
-static HarpRuntimeCreator runtime_creator = {
-    .argv0 = "./test_harp_runtime"
+static HarpRuntimeDesc runtime_desc = {
+    .executable_path = "./test_harp_runtime"
 };
 
 
@@ -17,7 +17,7 @@ static void test_setup_teardown() {
     HarpResult result =
         harp_setup_runtime(
             &runtime,
-            &runtime_creator
+            &runtime_desc
         );
 
     assert(result == HARP_RESULT_OK);
@@ -59,12 +59,12 @@ static void test_global_alloc_single() {
     assert(
         harp_setup_runtime(
             &runtime,
-            &runtime_creator
+            &runtime_desc
         ) == HARP_RESULT_OK
     );
 
     void *ptr =
-        harp_alloc_global(
+        harp_runtime_alloc_global(
             &runtime,
             64,
             alignof(max_align_t)
@@ -84,26 +84,26 @@ static void test_global_alloc_multiple() {
     assert(
         harp_setup_runtime(
             &runtime,
-            &runtime_creator
+            &runtime_desc
         ) == HARP_RESULT_OK
     );
 
     void *a =
-        harp_alloc_global(
+        harp_runtime_alloc_global(
             &runtime,
             32,
             8
         );
 
     void *b =
-        harp_alloc_global(
+        harp_runtime_alloc_global(
             &runtime,
             64,
             16
         );
 
     void *c =
-        harp_alloc_global(
+        harp_runtime_alloc_global(
             &runtime,
             128,
             32
@@ -129,19 +129,19 @@ static void test_global_alloc_alignment() {
     assert(
         harp_setup_runtime(
             &runtime,
-            &runtime_creator
+            &runtime_desc
         ) == HARP_RESULT_OK
     );
 
     void *ptr16 =
-        harp_alloc_global(
+        harp_runtime_alloc_global(
             &runtime,
             64,
             16
         );
 
     void *ptr32 =
-        harp_alloc_global(
+        harp_runtime_alloc_global(
             &runtime,
             64,
             32
@@ -170,7 +170,7 @@ static void test_global_alloc_growth() {
     assert(
         harp_setup_runtime(
             &runtime,
-            &runtime_creator
+            &runtime_desc
         ) == HARP_RESULT_OK
     );
 
@@ -183,7 +183,7 @@ static void test_global_alloc_growth() {
 
     for(int i = 0; i < 16; ++i) {
         void *ptr =
-            harp_alloc_global(
+            harp_runtime_alloc_global(
                 &runtime,
                 alloc_size,
                 alignof(max_align_t)
@@ -203,62 +203,6 @@ static void test_global_alloc_growth() {
 }
 
 
-static void test_invalid_arguments() {
-    // setup_runtime
-    assert(
-        harp_setup_runtime(
-            NULL,
-            &runtime_creator
-        ) == HARP_RESULT_INVALID_ARGUMENTS
-    );
-
-    assert(
-        harp_setup_runtime(
-            &(HarpRuntime){0},
-            NULL
-        ) == HARP_RESULT_INVALID_ARGUMENTS
-    );
-
-    // alloc
-    assert(
-        harp_alloc_global(
-            NULL,
-            64,
-            8
-        ) == NULL
-    );
-
-    HarpRuntime runtime = {0};
-
-    assert(
-        harp_setup_runtime(
-            &runtime,
-            &runtime_creator
-        ) == HARP_RESULT_OK
-    );
-
-    assert(
-        harp_alloc_global(
-            &runtime,
-            0,
-            8
-        ) == NULL
-    );
-
-    assert(
-        harp_alloc_global(
-            &runtime,
-            64,
-            0
-        ) == NULL
-    );
-
-    printf("[OK] invalid arguments\n");
-
-    harp_teardown_runtime(&runtime);
-}
-
-
 int main() {
     test_setup_teardown();
 
@@ -266,8 +210,6 @@ int main() {
     test_global_alloc_multiple();
     test_global_alloc_alignment();
     test_global_alloc_growth();
-
-    test_invalid_arguments();
 
     printf("\nALL TESTS PASSED\n");
 

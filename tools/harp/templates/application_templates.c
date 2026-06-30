@@ -49,17 +49,17 @@ const char *template_application_cmakelists =
 "endif()\n";
 
 const char *template_application_main_c =
-"#include <harp/harp_core.h>\n"
+"#include <harp/harp_api.h>\n"
 "\n"
 "#include <stdint.h>\n"
 "\n"
 "int main(int argc, char **argv) {\n"
 "    (void)argc;\n"
 "\n"
-"    HarpRuntimeCreator creator = { .argv0 = argv[0] };\n"
+"    HarpRuntimeDesc desc = { .executable_path = argv[0] };\n"
 "    HarpRuntime *runtime = NULL;\n"
 "\n"
-"    if(harp_initialize((const HarpCreatorBase *)&creator, &runtime) != HARP_RESULT_OK)\n"
+"    if(harp_initialize(&desc, &runtime) != HARP_RESULT_OK)\n"
 "        return 1;\n"
 "\n"
 "    if(harp_runtime_load_packages(runtime) != HARP_RESULT_OK) {\n"

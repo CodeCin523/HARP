@@ -1,7 +1,7 @@
 #include <assert.h>
 #include <stdio.h>
 
-#include <harp/harp_core.h>
+#include <harp/harp_api.h>
 
 int main(int argc, char **argv) {
     printf("=== HARP PATH TEST ===\n");
@@ -12,12 +12,12 @@ int main(int argc, char **argv) {
 
     HarpRuntime *runtime = NULL;
 
-    HarpRuntimeCreator creator = {
-        .argv0 = argv[0]
+    HarpRuntimeDesc desc = {
+        .executable_path = argv[0]
     };
 
     HarpResult res =
-        harp_initialize((HarpCreatorBase *)&creator, &runtime);
+        harp_initialize(&desc, &runtime);
 
     assert(res == HARP_RESULT_OK);
     assert(runtime != NULL);

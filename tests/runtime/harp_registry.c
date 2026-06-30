@@ -46,7 +46,7 @@ static void test_bind_get() {
     );
 
     void *ptr =
-        harp_registry_get(
+        harp_registry_get_runtime(
             &r,
             "foo",
             HARP_REGISTRY_ENTRY_TYPE_HANDLER
@@ -140,7 +140,7 @@ static void test_unbind() {
     );
 
     void *ptr =
-        harp_registry_get(
+        harp_registry_get_runtime(
             &r,
             name,
             HARP_REGISTRY_ENTRY_TYPE_HANDLER
@@ -172,7 +172,7 @@ static void test_wrong_type() {
     );
 
     void *ptr =
-        harp_registry_get(
+        harp_registry_get_runtime(
             &r,
             name,
             HARP_REGISTRY_ENTRY_TYPE_HANDLER
@@ -241,7 +241,7 @@ static void test_many_entries() {
     );
 
     assert(
-        harp_registry_get(
+        harp_registry_get_runtime(
             &r,
             "a",
             HARP_REGISTRY_ENTRY_TYPE_HANDLER
@@ -249,7 +249,7 @@ static void test_many_entries() {
     );
 
     assert(
-        harp_registry_get(
+        harp_registry_get_runtime(
             &r,
             "b",
             HARP_REGISTRY_ENTRY_TYPE_HANDLER
@@ -257,7 +257,7 @@ static void test_many_entries() {
     );
 
     assert(
-        harp_registry_get(
+        harp_registry_get_runtime(
             &r,
             "c",
             HARP_REGISTRY_ENTRY_TYPE_ACTOR
@@ -265,7 +265,7 @@ static void test_many_entries() {
     );
 
     assert(
-        harp_registry_get(
+        harp_registry_get_runtime(
             &r,
             "d",
             HARP_REGISTRY_ENTRY_TYPE_HANDLER
@@ -273,7 +273,7 @@ static void test_many_entries() {
     );
 
     assert(
-        harp_registry_get(
+        harp_registry_get_runtime(
             &r,
             "z",
             HARP_REGISTRY_ENTRY_TYPE_HANDLER

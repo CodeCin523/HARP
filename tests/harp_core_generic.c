@@ -3,7 +3,7 @@
 #include <string.h>
 #include <stdalign.h>
 
-#include <harp/harp_core.h>
+#include <harp/harp_api.h>
 
 /* ================================================================================ */
 /*  TEST OBJECTS                                                                    */
@@ -88,12 +88,12 @@ int main(int argc, char **argv) {
 
     HarpRuntime *runtime = NULL;
 
-    HarpRuntimeCreator creator = {
-        .argv0 = argv[0]
+    HarpRuntimeDesc desc = {
+        .executable_path = argv[0]
     };
 
     assert(
-        harp_initialize((HarpCreatorBase *)&creator, &runtime) == HARP_RESULT_OK
+        harp_initialize(&desc, &runtime) == HARP_RESULT_OK
     );
 
     assert(runtime != NULL);
@@ -139,7 +139,7 @@ int main(int argc, char **argv) {
     };
 
     assert(
-        core->register_handler(core, &handler_desc) == HARP_RESULT_OK
+        core->register_handler(core, &handler_desc, NULL) == HARP_RESULT_OK
     );
 
     printf("[OK] register handler\n");
@@ -170,10 +170,16 @@ int main(int argc, char **argv) {
     /* Get Handler Desc                                                          */
     /* ------------------------------------------------------------------------ */
 
+    HarpDependencyDesc hdesc_dep = {
+        .name = "test_handler",
+        .min_version = 0,
+        .max_version = UINT32_MAX
+    };
+
     HarpHandlerDesc *handler_desc_out = NULL;
 
     assert(
-        core->get_handler_desc(core, "test_handler", &handler_desc_out)
+        core->get_handler_desc(core, &hdesc_dep, &handler_desc_out)
         == HARP_RESULT_OK
     );
 
@@ -201,9 +207,8 @@ int main(int argc, char **argv) {
     /* Handler Set Serving                                                       */
     /* ------------------------------------------------------------------------ */
 
-    // Fresh from initialize, the handler is already VALID + SERVING.
-    // Re-asserting SERVING=1 on an already-serving handler is a no-op
-    // transition and must be rejected.
+    // After initialize, the handler is VALID but NOT SERVING.
+    // Setting SERVING=1 is a valid first transition.
     assert(
         core->handler_set_serving(core, handler_base, 1)
         == HARP_RESULT_OK
@@ -280,7 +285,11 @@ int main(int argc, char **argv) {
         .instance_size = sizeof(TestActor),
         .instance_alignment = alignof(TestActor),
 
-        .parent_handler = "test_handler",
+        .parent_handler = {
+            .name = "test_handler",
+            .min_version = 0,
+            .max_version = UINT32_MAX
+        },
 
         .pfn_create = test_actor_create,
         .pfn_destroy = test_actor_destroy
@@ -296,10 +305,16 @@ int main(int argc, char **argv) {
     /* Get Actor Desc                                                            */
     /* ------------------------------------------------------------------------ */
 
+    HarpDependencyDesc adesc_dep = {
+        .name = "test_actor",
+        .min_version = 0,
+        .max_version = UINT32_MAX
+    };
+
     HarpActorDesc *actor_desc_out = NULL;
 
     assert(
-        core->get_actor_desc(core, "test_actor", &actor_desc_out)
+        core->get_actor_desc(core, &adesc_dep, &actor_desc_out)
         == HARP_RESULT_OK
     );
 
@@ -332,7 +347,8 @@ int main(int argc, char **argv) {
     /* Actor Set Serving                                                        */
     /* ------------------------------------------------------------------------ */
 
-    // Fresh from create, the actor is already VALID + SERVING.
+    // After create, the actor is VALID but NOT SERVING.
+    // Setting SERVING=1 is a valid first transition.
     assert(
         core->actor_set_serving(core, actor_base, 1)
         == HARP_RESULT_OK
@@ -395,10 +411,16 @@ int main(int argc, char **argv) {
     /* Get Actor Count                                                          */
     /* ------------------------------------------------------------------------ */
 
+    HarpDependencyDesc actor_dep = {
+        .name = "test_actor",
+        .min_version = 0,
+        .max_version = UINT32_MAX
+    };
+
     uint64_t actor_count = 0;
 
     assert(
-        core->get_actor_count(core, "test_actor", &actor_count)
+        core->get_actor_count(core, &actor_dep, &actor_count)
         == HARP_RESULT_OK
     );
 
@@ -413,7 +435,7 @@ int main(int argc, char **argv) {
     HarpActorBase *actor_at = NULL;
 
     assert(
-        core->get_actor_at(core, "test_actor", 0, &actor_at)
+        core->get_actor_at(core, &actor_dep, 0, &actor_at)
         == HARP_RESULT_OK
     );
 
@@ -428,7 +450,7 @@ int main(int argc, char **argv) {
     uint64_t actor_array_count = 0;
 
     assert(
-        core->get_actors(core, "test_actor", &actor_array_count, NULL)
+        core->get_actors(core, &actor_dep, &actor_array_count, NULL)
         == HARP_RESULT_OK
     );
 
@@ -437,7 +459,7 @@ int main(int argc, char **argv) {
     HarpActorBase *actors[1] = {0};
 
     assert(
-        core->get_actors(core, "test_actor", &actor_array_count, actors)
+        core->get_actors(core, &actor_dep, &actor_array_count, actors)
         == HARP_RESULT_OK
     );
 

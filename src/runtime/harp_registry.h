@@ -1,7 +1,7 @@
 #ifndef RUNTIME_REGISTRY_H
 #define RUNTIME_REGISTRY_H
 
-#include <harp/harp_core.h>
+#include <harp/harp_api.h>
 
 #include <hmem/hmem_book.h>
 #include <hmem/hmem_arena.h>
@@ -12,10 +12,11 @@
 
 typedef uint8_t HarpRegistryEntryType;
 enum {
-    HARP_REGISTRY_ENTRY_TYPE_RESERVED = 0,
-    HARP_REGISTRY_ENTRY_TYPE_HANDLER = 1,
-    HARP_REGISTRY_ENTRY_TYPE_ACTOR = 2,
-    HARP_REGISTRY_ENTRY_TYPE_PACKAGE = 3
+    HARP_REGISTRY_ENTRY_TYPE_INVALID = 0,
+    HARP_REGISTRY_ENTRY_TYPE_RESERVED = 1,
+    HARP_REGISTRY_ENTRY_TYPE_HANDLER = 2,
+    HARP_REGISTRY_ENTRY_TYPE_ACTOR = 3,
+    HARP_REGISTRY_ENTRY_TYPE_PACKAGE = 4,
 };
 
 typedef struct {
@@ -51,7 +52,8 @@ HarpName harp_registry_name(HarpRegistry *registry, HarpName name);
 HarpResult harp_registry_bind(HarpRegistry *registry, HarpName name, HarpRegistryEntryType type, void *runtime);
 HarpResult harp_registry_unbind(HarpRegistry *registry, HarpName name, HarpRegistryEntryType type);
 
-void *harp_registry_get(HarpRegistry *registry, HarpName name, HarpRegistryEntryType type);
+HarpRegistryEntryType harp_registry_get_type(HarpRegistry *registry, HarpName name);
+void *harp_registry_get_runtime(HarpRegistry *registry, HarpName name, HarpRegistryEntryType type);
 
 
 #endif /* RUNTIME_REGISTRY_H */

@@ -1,8 +1,7 @@
 #include "harp_journal.h"
-
 #include "harp_runtime.h"
 
-#include "../impl/harp_core_handler.h"
+#include <harp/utils/harp_helpers.h>
 
 #include <stdlib.h>
 #include <string.h>
@@ -73,16 +72,17 @@ HarpResult harp_journal_remove(HarpJournal *journal, HarpName name) {
         return HARP_RESULT_NAME_NOT_FOUND;
 
     if(journal->entries[id].is_actor) { // Splitting responsability of memory between runtime and journal, I do not like it.
-        HarpRuntimeActor *r_actor = harp_registry_get(&journal->runtime->registry, name, HARP_REGISTRY_ENTRY_TYPE_ACTOR);
+        HarpRuntimeActor *r_actor = harp_registry_get_runtime(&journal->runtime->registry, name, HARP_REGISTRY_ENTRY_TYPE_ACTOR);
         if(r_actor == NULL)
             return HARP_RESULT_CRITICAL_FAIL;
 
-        for(uint64_t i = 0; i < r_actor->actor_count; ++i) {
-            runtime_actor_destroy(journal->runtime, journal->entries[id].name, r_actor->actors[i]);
-        }
-        harp_teardown_runtime_actor(r_actor);
+        harp_teardown_ract(r_actor);
     } else {
-        runtime_handler_terminate(journal->runtime, journal->entries[id].name);
+        HarpRuntimeHandler *rhdl =
+            harp_registry_get_runtime(&journal->runtime->registry, journal->entries[id].name, HARP_REGISTRY_ENTRY_TYPE_HANDLER);
+        
+        HARP_CHECK_CRITICAL(rhdl != NULL);
+        harp_rhdl_terminate(rhdl, journal->runtime);
     }
 
     --journal->count;

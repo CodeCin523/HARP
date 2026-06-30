@@ -1,5 +1,4 @@
 #include <harp/harp.h>
-#include <harp/utils/harp_api.h>
 
 #include <test_package/test_api.h>
 
@@ -77,31 +76,12 @@ static HarpResult test_package_register(
         .dependency_count = 0
     };
 
+    HarpHandlerBase *base = NULL;
+
     HarpResult res =
         core->register_handler(
             core,
-            &handler_desc
-        );
-
-    if (res != HARP_RESULT_OK)
-        return res;
-
-    /* ----------------------------------------------------- */
-    /* IMPORTANT: fetch handler instance AFTER registration  */
-    /* ----------------------------------------------------- */
-
-    HarpDependencyDesc dep = {
-        .name = TEST_API_NAME,
-        .min_version = TEST_API_VERSION,
-        .max_version = TEST_API_VERSION
-    };
-
-    HarpHandlerBase *base = NULL;
-
-    res =
-        core->get_handler(
-            core,
-            &dep,
+            &handler_desc,
             &base
         );
 

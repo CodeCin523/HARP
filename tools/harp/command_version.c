@@ -1,6 +1,6 @@
 #include <stdio.h>
 
-#include <harp/harp_core.h>
+#include <harp/harp_api.h>
 #include <harp/utils/harp_version.h>
 
 int command_version(void) {

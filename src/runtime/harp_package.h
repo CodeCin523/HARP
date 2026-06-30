@@ -1,7 +1,7 @@
 #ifndef RUNTIME_HARP_PACKAGE_H
 #define RUNTIME_HARP_PACKAGE_H
 
-#include <harp/harp_core.h>
+#include <harp/harp_api.h>
 #include "harp_registry.h"
 
 

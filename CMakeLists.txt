@@ -64,11 +64,11 @@ add_library(HARP::Harp ALIAS Harp)
 
 target_sources(
     Harp PRIVATE
-    src/impl/harp_core_handler.c
+    src/impl/harp_core.c
     src/runtime/harp_package.c
     src/runtime/harp_registry.c
     src/runtime/harp_runtime.c
-    src/harp_core.c
+    src/harp_api.c
 )
 
 target_include_directories(
@@ -95,6 +95,7 @@ target_compile_features(
 # ------------------------------------------------------------------------------
 
 if(HARP_BUILD_TESTS)
+    enable_testing()
     add_subdirectory(tests)
 endif()
 

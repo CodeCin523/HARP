@@ -1,7 +1,7 @@
 #ifndef RUNTIME_JOURNAL_H
 #define RUNTIME_JOURNAL_H
 
-#include <harp/harp_core.h>
+#include <harp/harp_api.h>
 
 #include "harp_runtime.h"
 

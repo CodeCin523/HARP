@@ -6,16 +6,29 @@ extern "C" {
 #endif
 
 #include <harp/harp.h>
+#include <harp/utils/harp_build.h>
 
 
 /* ================================================================================ */
 /*  GENERIC                                                                         */
 /* ================================================================================ */
 
-#define HARP_SUCCEEDED(res) ((res) == HARP_RESULT_OK)
-#define HARP_FAILED(res)    ((res) != HARP_RESULT_OK)
-
 #define HARP_UNUSED(x) ((void)(x))
+
+
+/* ================================================================================ */
+/*  CHECKS                                                                          */
+/* ================================================================================ */
+
+#if HARP_DEBUG
+#include <assert.h>
+#define HARP_CHECK_CRITICAL(condition) assert(condition)
+#else
+#define HARP_CHECK_CRITICAL(condition) ((void)0)
+#endif
+
+#define HARP_CHECK_ARG(condition, ret)   do { if(!(condition)) return (ret); } while(0)
+#define HARP_CHECK_STATE(condition, ret) do { if(!(condition)) return (ret); } while(0)
 
 
 /* ================================================================================ */

@@ -116,7 +116,7 @@ struct HarpActorDesc {
     HarpResult (*pfn_create)(HarpCoreHandler*, HarpActorBase*, HarpCreatorBase*);
     HarpResult (*pfn_destroy)(HarpCoreHandler*, HarpActorBase*);
 
-    HarpName parent_handler;
+    HarpDependencyDesc parent_handler;
 };
 
 
@@ -145,45 +145,45 @@ struct HarpActorBase {
 /* ================================================================================ */
 
 #define HARP_CORE_HANDLER_NAME "HarpCoreHandler"
-#define HARP_CORE_HANDLER_VERSION HARP_MAKE_VERSION(1,2,0)
+#define HARP_CORE_HANDLER_VERSION HARP_MAKE_VERSION(2,0,0)
 
 struct HarpCoreHandler {
     HarpHandlerBase _base;
 
     /* Registration */
-    HarpResult (*register_handler)(const HarpCoreHandler *h, const HarpHandlerDesc *desc);
+    HarpResult (*register_handler)(const HarpCoreHandler *h, const HarpHandlerDesc *desc, HarpHandlerBase **out_handler);
     HarpResult (*register_actor)(const HarpCoreHandler *h, const HarpActorDesc *desc);
 
     /* Retrieval */
     HarpResult (*get_handler)(const HarpCoreHandler *h, const HarpDependencyDesc *dependency, HarpHandlerBase **out_handler);
 
-    HarpResult (*get_actor_count)(const HarpCoreHandler *h, const HarpName name, uint64_t *out_count);
-    HarpResult (*get_actor_at)(const HarpCoreHandler *h, const HarpName name, uint64_t index, HarpActorBase **out_actor);
-    HarpResult (*get_actors)(const HarpCoreHandler *h, const HarpName name, uint64_t *inout_count, HarpActorBase **out_actors);
+    HarpResult (*get_actor_count)(const HarpCoreHandler *h, const HarpDependencyDesc *dependency, uint64_t *out_count);
+    HarpResult (*get_actor_at)(const HarpCoreHandler *h, const HarpDependencyDesc *dependency, uint64_t index, HarpActorBase **out_actor);
+    HarpResult (*get_actors)(const HarpCoreHandler *h, const HarpDependencyDesc *dependency, uint64_t *inout_count, HarpActorBase **out_actors);
 
-    HarpResult (*get_handler_desc)(const HarpCoreHandler *h, const HarpName name, HarpHandlerDesc **out_desc);
-    HarpResult (*get_actor_desc)(const HarpCoreHandler *h, const HarpName name, HarpActorDesc **out_desc);
+    HarpResult (*get_handler_desc)(const HarpCoreHandler *h, const HarpDependencyDesc *dependency, HarpHandlerDesc **out_desc);
+    HarpResult (*get_actor_desc)(const HarpCoreHandler *h, const HarpDependencyDesc *dependency, HarpActorDesc **out_desc);
 
-    /* Lifecycle */
+    /* Handler */
     HarpResult (*handler_initialize)(const HarpCoreHandler *h, const HarpName name, const HarpCreatorBase *creator);
     HarpResult (*handler_terminate)(const HarpCoreHandler *h, const HarpName name);
 
+    // HarpResult (*handler_set_valid)(const HarpCoreHandler *h, HarpHandlerBase *base, uint8_t value);
+    HarpResult (*handler_set_serving)(const HarpCoreHandler *h, HarpHandlerBase *base, uint8_t value);
+    HarpResult (*handler_set_failed)(const HarpCoreHandler *h, HarpHandlerBase *base, uint8_t value);
+
+    /* Actor */
     HarpResult (*actor_create)(const HarpCoreHandler *h, const HarpName name, const HarpCreatorBase *creator, HarpActorBase **out_actor);
     HarpResult (*actor_destroy)(const HarpCoreHandler *h, const HarpName name, HarpActorBase *actor);
+
+    // HarpResult (*actor_set_valid)(const HarpCoreHandler *h, HarpActorBase *base, uint8_t value);
+    HarpResult (*actor_set_serving)(const HarpCoreHandler *h, HarpActorBase *base, uint8_t value);
+    HarpResult (*actor_set_failed)(const HarpCoreHandler *h, HarpActorBase *base, uint8_t value);
 
     /* Paths */
     HarpResult (*get_executable_directory)(const HarpCoreHandler *h, const char **out_path);
     HarpResult (*get_working_directory)(const HarpCoreHandler *h, const char **out_path);
     HarpResult (*get_package_directory)(const HarpCoreHandler *h, const HarpName name, const char **out_path);
-
-    /* Status Switch */
-    // HarpResult (*handler_set_valid)(const HarpCoreHandler *h, HarpHandlerBase *base, uint8_t value);
-    HarpResult (*handler_set_serving)(const HarpCoreHandler *h, HarpHandlerBase *base, uint8_t value);
-    HarpResult (*handler_set_failed)(const HarpCoreHandler *h, HarpHandlerBase *base, uint8_t value);
-
-    // HarpResult (*actor_set_valid)(const HarpCoreHandler *h, HarpActorBase *base, uint8_t value);
-    HarpResult (*actor_set_serving)(const HarpCoreHandler *h, HarpActorBase *base, uint8_t value);
-    HarpResult (*actor_set_failed)(const HarpCoreHandler *h, HarpActorBase *base, uint8_t value);
 
     /* Time */
     HarpResult (*get_uptime_s)(const HarpCoreHandler *h, uint64_t *out_time);

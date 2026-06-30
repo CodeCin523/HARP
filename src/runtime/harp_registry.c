@@ -240,7 +240,7 @@ HarpName harp_registry_name(HarpRegistry *registry, HarpName name) {
 }
 
 HarpResult harp_registry_bind(HarpRegistry *registry, HarpName name, HarpRegistryEntryType type, void *runtime) {
-    if(registry == NULL || name == NULL || runtime == NULL)
+    if(registry == NULL || name == NULL || runtime == NULL || type == HARP_REGISTRY_ENTRY_TYPE_INVALID)
         return HARP_RESULT_INVALID_ARGUMENTS;
 
     // entry information
@@ -269,7 +269,7 @@ HarpResult harp_registry_bind(HarpRegistry *registry, HarpName name, HarpRegistr
     return HARP_RESULT_OK;
 }
 HarpResult harp_registry_unbind(HarpRegistry *registry, HarpName name, HarpRegistryEntryType type) {
-    if(registry == NULL || name == NULL)
+    if(registry == NULL || name == NULL || type == HARP_REGISTRY_ENTRY_TYPE_INVALID)
         return HARP_RESULT_INVALID_ARGUMENTS;
 
     // entry information
@@ -292,8 +292,23 @@ HarpResult harp_registry_unbind(HarpRegistry *registry, HarpName name, HarpRegis
     return HARP_RESULT_OK;
 }
 
-void *harp_registry_get(HarpRegistry *registry, HarpName name, HarpRegistryEntryType type) {
+HarpRegistryEntryType harp_registry_get_type(HarpRegistry *registry, HarpName name) {
     if(registry == NULL || name == NULL)
+        return HARP_REGISTRY_ENTRY_TYPE_INVALID;
+
+    // entry information
+    uint32_t hash = name_hash(name);
+    HarpRegistryBucket *bucket = &registry->buckets[hash & (HARP_REGISTRY_BUCKET_COUNT - 1)];
+
+    uint32_t entry_idx = bucket_find_ci(bucket, name, hash);
+    if(entry_idx == UINT32_MAX)
+        return HARP_REGISTRY_ENTRY_TYPE_INVALID;
+    HarpRegistryEntry *entry = &bucket->entries[entry_idx];
+
+    return entry->type;
+}
+void *harp_registry_get_runtime(HarpRegistry *registry, HarpName name, HarpRegistryEntryType type) {
+    if(registry == NULL || name == NULL || type == HARP_REGISTRY_ENTRY_TYPE_INVALID)
         return NULL;
 
     // entry information

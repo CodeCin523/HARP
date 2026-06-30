@@ -1,5 +1,5 @@
-#ifndef HARP_CORE_H
-#define HARP_CORE_H
+#ifndef HARP_API_H
+#define HARP_API_H
 
 #ifdef __cplusplus
 extern "C" {
@@ -8,12 +8,10 @@ extern "C" {
 #include "harp.h"
 
 
-typedef struct HarpRuntimeCreator HarpRuntimeCreator;
+typedef struct HarpRuntimeDesc HarpRuntimeDesc;
 
-struct HarpRuntimeCreator {
-    HarpCreatorBase _base;
-
-    const char *argv0;
+struct HarpRuntimeDesc {
+    const char *executable_path;
 };
 
 
@@ -24,7 +22,7 @@ struct HarpRuntimeCreator {
 HarpVersion harp_version(void);
 
 HarpResult harp_initialize(
-    const HarpCreatorBase *creator,
+    const HarpRuntimeDesc *desc,
     HarpRuntime **out_runtime
 );
 HarpResult harp_terminate(
@@ -60,4 +58,4 @@ HarpResult harp_runtime_load_packages_from(
 }
 #endif
 
-#endif /* HARP_CORE_H */
+#endif /* HARP_API_H */

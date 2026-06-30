@@ -1,7 +1,7 @@
 #include <assert.h>
 #include <stdio.h>
 
-#include <harp/harp_core.h>
+#include <harp/harp_api.h>
 #include <test_package/test_api.h>
 
 int main(int argc, char **argv) {
@@ -11,15 +11,15 @@ int main(int argc, char **argv) {
     /* INIT RUNTIME                                                          */
     /* ===================================================================== */
 
-    HarpRuntimeCreator creator = {
-        .argv0 = argv[0]
+    HarpRuntimeDesc desc = {
+        .executable_path = argv[0]
     };
 
     HarpRuntime *runtime = NULL;
 
     HarpResult res =
         harp_initialize(
-            (const HarpCreatorBase *)&creator,
+            &desc,
             &runtime
         );
 
